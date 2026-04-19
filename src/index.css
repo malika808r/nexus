@@ -1,0 +1,134 @@
+ @import "tailwindcss";
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-brand-pink: #ec4899;
+  --color-brand-lime: #84cc16;
+}
+
+/* ── Design Tokens ── */
+:root {
+  --bg-base:    #F9FAFB;
+  --bg-card:    #FFFFFF;
+  --bg-input:   #F3F4F6;
+  --border:     #E5E7EB;
+  --text-primary:   #0A0A0A;
+  --text-secondary: #4B5563;
+  --text-muted:     #9CA3AF;
+  
+  --pulse-bg: radial-gradient(at 0% 0%, rgba(236,72,153,0.08) 0, transparent 50%), 
+              radial-gradient(at 100% 0%, rgba(132,204,22,0.08) 0, transparent 50%);
+}
+
+.dark {
+  --bg-base:    #030712;
+  --bg-card:    rgba(17, 24, 39, 0.7);
+  --bg-input:   rgba(31, 41, 55, 0.5);
+  --border:     rgba(255, 255, 255, 0.08);
+  --text-primary:   #F9FAFB;
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-muted:     rgba(255, 255, 255, 0.35);
+  
+  --pulse-bg: radial-gradient(at 0% 0%, rgba(236,72,153,0.15) 0, transparent 50%), 
+              radial-gradient(at 100% 0%, rgba(132,204,22,0.15) 0, transparent 50%);
+}
+
+body {
+  background-color: var(--bg-base);
+  background-image: var(--pulse-bg);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  margin: 0;
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ── Pulse UI Components ── */
+.card {
+  background-color: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  border-radius: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
+}
+
+.glow-card-pink {
+  box-shadow: 0 0 40px rgba(236, 72, 153, 0.15);
+  border-color: rgba(236, 72, 153, 0.2);
+}
+
+.glow-card-lime {
+  box-shadow: 0 0 40px rgba(132, 204, 22, 0.15);
+  border-color: rgba(132, 204, 22, 0.2);
+}
+
+.input-base {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: 1.25rem;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  outline: none;
+  width: 100%;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.input-base:focus {
+  border-color: #ec4899;
+  background-color: var(--bg-card);
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.15);
+}
+
+.btn-pulse {
+  background: linear-gradient(135deg, #ec4899, #84cc16);
+  color: white;
+  font-weight: 800;
+  border-radius: 1.5rem;
+  padding: 1rem 2rem;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-pulse:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4);
+}
+
+.btn-pulse:active {
+  transform: scale(0.98);
+}
+
+/* ── Mesh Background Animation ── */
+@keyframes meshDrift {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+.mesh-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: 
+    radial-gradient(circle at 10% 10%, rgba(236, 72, 153, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(132, 204, 22, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 60%);
+  background-size: 200% 200%;
+  animation: meshDrift 30s ease infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
