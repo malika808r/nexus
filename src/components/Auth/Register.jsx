@@ -1,27 +1,38 @@
-import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/store';
-import { User, Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useToast } from '../ui/Toast';
+
+const registerSchema = z.object({
+  firstName: z.string().min(2, 'Имя должно быть не менее 2 символов'),
+  lastName: z.string().min(2, 'Фамилия должна быть не менее 2 символов'),
+  email: z.string().email('Некорректный email адрес'),
+  password: z.string().min(6, 'Пароль должен быть не менее 6 символов'),
+});
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register, loading } = useAuthStore();
+  const { register: signUp, loading } = useAuthStore();
+  const { show } = useToast();
   
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+  });
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setError('');
-    const result = await register(email, password, firstName, lastName);
+  const onSubmit = async (data) => {
+    const result = await signUp(data.email, data.password, data.firstName, data.lastName);
     if (result.success) {
       navigate('/app');
     } else {
-      setError(result.error || 'Ошибка при регистрации');
+      show(result.error || 'Ошибка при регистрации', 'error');
     }
   };
 
@@ -32,48 +43,58 @@ export default function Register() {
         <p className="text-[15px] font-medium opacity-50 px-4" style={{ color: 'var(--text-primary)' }}>Создайте аккаунт для продолжения.</p>
       </motion.div>
 
-      {error && (
-        <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-          className="mb-6 p-4 rounded-2xl text-sm flex items-center gap-2 border"
-          style={{ backgroundColor: 'rgba(239, 68, 68, 0.05)', borderColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}
-        >
-          <AlertCircle size={18} />
-          {error}
-        </motion.div>
-      )}
-
-      <form onSubmit={handleRegister} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
-            <input
-              type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Имя" required className="input-base pl-12"
-            />
+          <div className="flex-1 space-y-1">
+            <div className="relative">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
+              <input
+                {...register('firstName')}
+                type="text"
+                placeholder="Имя"
+                className={`input-base !pl-12 ${errors.firstName ? 'border-red-500' : ''}`}
+              />
+            </div>
+            {errors.firstName && <p className="text-xs text-red-500 font-bold ml-2">{errors.firstName.message}</p>}
           </div>
-          <div className="relative flex-1">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
-            <input
-              type="text" value={lastName} onChange={(e) => setLastName(e.target.value)}
-              placeholder="Фамилия" className="input-base pl-12"
-            />
+          <div className="flex-1 space-y-1">
+            <div className="relative">
+              <User className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
+              <input
+                {...register('lastName')}
+                type="text"
+                placeholder="Фамилия"
+                className={`input-base !pl-12 ${errors.lastName ? 'border-red-500' : ''}`}
+              />
+            </div>
+            {errors.lastName && <p className="text-xs text-red-500 font-bold ml-2">{errors.lastName.message}</p>}
           </div>
         </div>
 
-        <div className="relative">
-          <Mail className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
-          <input
-            type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email" required className="input-base pl-12"
-          />
+        <div className="space-y-1">
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
+            <input
+              {...register('email')}
+              type="email"
+              placeholder="Email"
+              className={`input-base !pl-12 ${errors.email ? 'border-red-500' : ''}`}
+            />
+          </div>
+          {errors.email && <p className="text-xs text-red-500 font-bold ml-2">{errors.email.message}</p>}
         </div>
 
-        <div className="relative">
-          <Lock className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
-          <input
-            type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            placeholder="Пароль" required className="input-base pl-12"
-          />
+        <div className="space-y-1">
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
+            <input
+              {...register('password')}
+              type="password"
+              placeholder="Пароль"
+              className={`input-base !pl-12 ${errors.password ? 'border-red-500' : ''}`}
+            />
+          </div>
+          {errors.password && <p className="text-xs text-red-500 font-bold ml-2">{errors.password.message}</p>}
         </div>
 
         <motion.button

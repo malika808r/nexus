@@ -1,30 +1,42 @@
-import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/store';
 import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '../ui/Toast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().email('Некорректный email адрес'),
+  password: z.string().min(6, 'Пароль должен быть не менее 6 символов'),
+});
 
 export default function Login() {
   const navigate = useNavigate();
   const { login, loading } = useAuthStore();
   const { show } = useToast();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    getValues
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    const result = await login(email, password);
+  const onSubmit = async (data) => {
+    const result = await login(data.email, data.password);
     if (result.success) {
       navigate('/app');
     } else {
-      setError(result.error || 'Неверный email или пароль');
+      show(result.error || 'Неверный email или пароль', 'error');
     }
   };
 
   const handleRecover = () => {
+    const email = getValues('email');
     if (!email) {
       show('Введите email для восстановления', 'error');
       return;
@@ -39,35 +51,31 @@ export default function Login() {
         <p className="text-[15px] font-medium opacity-50 px-4" style={{ color: 'var(--text-primary)' }}>Введите свои данные для продолжения.</p>
       </motion.div>
 
-      {error && (
-        <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-          className="mb-6 p-4 rounded-2xl text-sm flex items-center gap-2 border"
-          style={{ backgroundColor: 'rgba(239, 68, 68, 0.05)', borderColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}
-        >
-          <AlertCircle size={18} />
-          {error}
-        </motion.div>
-      )}
-
-      <form onSubmit={handleLogin} className="space-y-4">
-        <div className="relative">
-          <Mail className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
-          <input
-            type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            required
-            className="input-base pl-12"
-          />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-1">
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
+            <input
+              {...register('email')}
+              type="email"
+              placeholder="Email"
+              className={`input-base !pl-12 ${errors.email ? 'border-red-500' : ''}`}
+            />
+          </div>
+          {errors.email && <p className="text-xs text-red-500 font-bold ml-2">{errors.email.message}</p>}
         </div>
 
-        <div className="relative">
-          <Lock className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
-          <input
-            type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-            placeholder="Пароль"
-            required
-            className="input-base pl-12"
-          />
+        <div className="space-y-1">
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
+            <input
+              {...register('password')}
+              type="password"
+              placeholder="Пароль"
+              className={`input-base !pl-12 ${errors.password ? 'border-red-500' : ''}`}
+            />
+          </div>
+          {errors.password && <p className="text-xs text-red-500 font-bold ml-2">{errors.password.message}</p>}
         </div>
 
         <div className="flex justify-end pr-2">

@@ -12,7 +12,14 @@ export const useAppStore = create((set, get) => ({
   checkAuth: async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      set({ user: session?.user || null, isInitializing: false });
+      if (session?.user) {
+        set({ user: session.user, isInitializing: false });
+        // Initial fetch for social data
+        get().fetchFollowing(session.user.id);
+        get().fetchNotifications();
+      } else {
+        set({ isInitializing: false });
+      }
     } catch (error) {
       console.error('checkAuth error:', error);
       set({ isInitializing: false });
@@ -34,6 +41,8 @@ export const useAppStore = create((set, get) => ({
 
       if (error) throw error;
       set({ user: data.user, loading: false });
+      get().fetchFollowing(data.user.id);
+      get().fetchNotifications();
       return { success: true, user: data.user };
     } catch (error) {
       set({ loading: false });
@@ -64,7 +73,7 @@ export const useAppStore = create((set, get) => ({
   logout: async () => {
     try {
       await supabase.auth.signOut();
-      set({ user: null });
+      set({ user: null, following: [], notifications: [] });
       return { success: true };
     } catch (error) {
       console.error('logout error:', error);
@@ -98,29 +107,55 @@ export const useAppStore = create((set, get) => ({
   // ==========================================
   feed: [],
   pitches: [],
+  feedPage: 0,
+  hasMoreFeed: true,
+  feedLoading: false,
   
-  fetchFeed: async () => {
-    // Подтягиваем чекпоинты, их глобальные цели и реакции к ним
-    const { data, error } = await supabase
-      .from('goal_checkpoints')
-      .select(`
-        *,
-        goals ( title, user_id ),
-        reactions ( id, type, user_id )
-      `)
-      .order('created_at', { ascending: false });
-      
-    if (error) {
+  fetchFeed: async (reset = false) => {
+    if (get().feedLoading || (!reset && !get().hasMoreFeed)) return;
+    
+    set({ feedLoading: true });
+    const page = reset ? 0 : get().feedPage;
+    const PAGE_SIZE = 10;
+    const from = page * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+
+    try {
+      const { data, error } = await supabase
+        .from('goal_checkpoints')
+        .select(`
+          *,
+          goals ( title, user_id ),
+          profiles:goals(profiles(*)),
+          reactions ( id, type, user_id )
+        `)
+        .order('created_at', { ascending: false })
+        .range(from, to);
+        
+      if (error) throw error;
+
+      // Handle profiles mapping (since goal_checkpoints -> goals -> profiles)
+      const mappedData = data.map(item => ({
+        ...item,
+        profiles: item.profiles?.[0] || item.goals?.profiles || { first_name: 'Пользователь' }
+      }));
+
+      set((state) => ({ 
+        feed: reset ? mappedData : [...state.feed, ...mappedData],
+        feedPage: page + 1,
+        hasMoreFeed: data.length === PAGE_SIZE,
+        feedLoading: false
+      }));
+    } catch (error) {
       console.error("Ошибка загрузки ленты:", error);
-    } else {
-      set({ feed: data || [] });
+      set({ feedLoading: false });
     }
   },
 
   fetchPitches: async () => {
     const { data, error } = await supabase
       .from('pitches')
-      .select('*')
+      .select('*, profiles(*)')
       .order('created_at', { ascending: false });
       
     if (error) {
@@ -130,42 +165,24 @@ export const useAppStore = create((set, get) => ({
     }
   },
 
-  addCheckpoint: async (goalId, content) => {
+  addCheckpoint: async (goalId, content, imageUrl = null) => {
     const user = get().user;
-    if (!user) {
-      console.warn("Для публикации нужен логин");
-      return; 
-    }
-
-    // Временный ID для оптимистичного рендеринга
-    const tempId = Date.now().toString();
-    const newCheckpoint = {
-      id: tempId,
-      goal_id: goalId,
-      content,
-      created_at: new Date().toISOString(),
-      reactions: [],
-      goals: { user_id: user.id, title: "Текущая цель" } // В реальности берем из локального стейта целей
-    };
-    
-    // Оптимистичное обновление ленты
-    set((state) => ({ feed: [newCheckpoint, ...state.feed] }));
+    if (!user) return false;
 
     const { data, error } = await supabase
       .from('goal_checkpoints')
-      .insert([{ goal_id: goalId, content }])
-      .select()
+      .insert([{ goal_id: goalId, content, image_url: imageUrl }])
+      .select('*, goals(title, user_id)')
       .single();
 
     if (error) {
       console.error("Ошибка добавления чекпоинта:", error);
-      // Откатываем оптимистичный апдейт при ошибке
-      set((state) => ({ feed: state.feed.filter(item => item.id !== tempId) }));
+      return false;
     } else {
-      // Заменяем временный чекпоинт на реальный из БД
-      set((state) => ({
-        feed: state.feed.map(item => item.id === tempId ? { ...item, id: data.id } : item)
-      }));
+      // Add profile info for UI
+      const newEntry = { ...data, profiles: user.user_metadata, reactions: [], image_url: imageUrl };
+      set((state) => ({ feed: [newEntry, ...state.feed] }));
+      return true;
     }
   },
 
@@ -183,7 +200,7 @@ export const useAppStore = create((set, get) => ({
     const { data, error } = await supabase
       .from('pitches')
       .insert([newPitch])
-      .select()
+      .select('*, profiles(*)')
       .single();
 
     if (error) {
@@ -192,6 +209,112 @@ export const useAppStore = create((set, get) => ({
     } else {
       set((state) => ({ pitches: [data, ...state.pitches] }));
       return true;
+    }
+  },
+
+  // ==========================================
+  // 3. СОЦИАЛЬНЫЙ ГРАФ (FOLLOWS & NOTIFICATIONS)
+  // ==========================================
+  following: [],
+  notifications: [],
+  unreadNotificationsCount: 0,
+
+  fetchFollowing: async (userId) => {
+    const { data, error } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', userId);
+    
+    if (!error) set({ following: data.map(f => f.following_id) });
+  },
+
+  followUser: async (targetId) => {
+    const user = get().user;
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('follows')
+      .insert([{ follower_id: user.id, following_id: targetId }]);
+
+    if (!error) {
+      set(state => ({ following: [...state.following, targetId] }));
+      // Notify target
+      get().createNotification(targetId, 'follow');
+    }
+  },
+
+  unfollowUser: async (targetId) => {
+    const user = get().user;
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('follows')
+      .delete()
+      .match({ follower_id: user.id, following_id: targetId });
+
+    if (!error) {
+      set(state => ({ following: state.following.filter(id => id !== targetId) }));
+    }
+  },
+
+  fetchNotifications: async () => {
+    const user = get().user;
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*, actor:profiles!notifications_actor_id_fkey(*)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (!error) {
+      set({ 
+        notifications: data,
+        unreadNotificationsCount: data.filter(n => !n.read).length
+      });
+    }
+  },
+
+  createNotification: async (userId, type, contentId = null) => {
+    const user = get().user;
+    if (!user || user.id === userId) return;
+
+    await supabase.from('notifications').insert([{
+      user_id: userId,
+      actor_id: user.id,
+      type,
+      content_id: contentId
+    }]);
+  },
+
+  markNotificationRead: async (id) => {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', id);
+
+    if (!error) {
+      set(state => ({
+        notifications: state.notifications.map(n => n.id === id ? { ...n, read: true } : n),
+        unreadNotificationsCount: Math.max(0, state.unreadNotificationsCount - 1)
+      }));
+    }
+  },
+
+  markAllNotificationsRead: async () => {
+    const user = get().user;
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', user.id);
+
+    if (!error) {
+      set(state => ({
+        notifications: state.notifications.map(n => ({ ...n, read: true })),
+        unreadNotificationsCount: 0 
+      }));
     }
   },
 
@@ -230,13 +353,12 @@ export const useAppStore = create((set, get) => ({
     }
   },
 
-  sendReaction: async (checkpointId, type) => {
+  sendReaction: async (checkpointId, type, authorId) => {
     const user = get().user;
     if (!user) return;
 
     const newReaction = { id: Date.now().toString(), checkpoint_id: checkpointId, user_id: user.id, type };
     
-    // Оптимистичное обновление: добавляем реакцию сразу
     set((state) => ({
       feed: state.feed.map(item => 
         item.id === checkpointId 
@@ -249,32 +371,21 @@ export const useAppStore = create((set, get) => ({
       .from('reactions')
       .insert([{ checkpoint_id: checkpointId, user_id: user.id, type }]);
 
-    if (error) {
-      console.error("Ошибка отправки реакции:", error);
-      // При ошибке можно было бы удалить добавленную реакцию обратно
+    if (!error && authorId) {
+      get().createNotification(authorId, 'like', checkpointId);
     }
   },
 
   // ==========================================
-  // 3. НАБЛЮДЕНИЯ ПОЛЬЗОВАТЕЛЯ (OBSERVATIONS)
-  // ==========================================
-  observations: [],
-  addObservation: (obs) => set((state) => ({ observations: [obs, ...state.observations] })),
-
-  // ==========================================
-  // 4. НАСТРОЙКИ (SETTINGS / LANGUAGE)
+  // 4. НАСТРОЙКИ И ТЕМА
   // ==========================================
   language: localStorage.getItem('app-language') || 'ru',
+  theme: localStorage.getItem('app-theme') || 'light',
 
   setLanguage: (lang) => {
     localStorage.setItem('app-language', lang);
     set({ language: lang });
   },
-
-  // ==========================================
-  // 5. ТЕМА (DARK / LIGHT)
-  // ==========================================
-  theme: localStorage.getItem('app-theme') || 'light',
 
   setTheme: (theme) => {
     localStorage.setItem('app-theme', theme);
@@ -287,6 +398,7 @@ export const useAppStore = create((set, get) => ({
     document.documentElement.classList.toggle('dark', theme === 'dark');
     set({ theme });
   }
+
 }));
 
 // Экспортируем второе имя (useAuthStore), чтобы старые файлы, 

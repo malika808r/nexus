@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthLayout from './components/Auth/AuthLayout';
@@ -13,9 +13,10 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ChatInterface from './components/ChatInterface';
 import CommunityRooms from './pages/CommunityRooms';
 import FindCompanion from './components/FindCompanion';
-import Basecamp from './pages/Basecamp'; // Renamed import to match file rename
+import Basecamp from './pages/Basecamp';
 import MapView from './pages/Events';
 import Support from './pages/Support';
+import Notifications from './pages/Notifications';
 
 export const router = createBrowserRouter([
   {
@@ -56,6 +57,14 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute><Profile /></ProtectedRoute>,
       },
       {
+        path: 'profile/:id',
+        element: <ProtectedRoute><Profile /></ProtectedRoute>,
+      },
+      {
+        path: 'notifications',
+        element: <ProtectedRoute><Notifications /></ProtectedRoute>,
+      },
+      {
         path: 'chats',
         element: <ProtectedRoute><CommunityRooms /></ProtectedRoute>,
       },
@@ -86,14 +95,14 @@ export const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <Login />,
+    element: <Navigate to="/auth/login" replace />,
   },
   {
     path: '/register',
-    element: <Register />,
+    element: <Navigate to="/auth/register" replace />,
   },
   {
     path: '*',
     element: <NotFound />,
   },
-]);
+]);
