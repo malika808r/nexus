@@ -15,6 +15,7 @@ import CommunityRooms from './pages/CommunityRooms';
 import Basecamp from './pages/Basecamp';
 import Support from './pages/Support';
 import Notifications from './pages/Notifications';
+import AdminPanel from './pages/AdminPanel';
 
 export const router = createBrowserRouter([
   {
@@ -39,7 +40,7 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute><Basecamp /></ProtectedRoute>,
       },
       {
-        path: 'people',
+        path: 'people', // Теперь это главная страница для поиска напарников
         element: <ProtectedRoute><People /></ProtectedRoute>,
       },
       {
@@ -51,8 +52,12 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute><Profile /></ProtectedRoute>,
       },
       {
-        path: 'profile/:id',
+        path: 'profile/:id', // Динамический роут для просмотра других
         element: <ProtectedRoute><Profile /></ProtectedRoute>,
+      },
+      {
+        path: 'admin', // Обязательная страница по ТЗ
+        element: <ProtectedRoute><AdminPanel /></ProtectedRoute>,
       },
       {
         path: 'notifications',
@@ -66,7 +71,7 @@ export const router = createBrowserRouter([
         path: 'chats/:roomId',
         element: <ProtectedRoute><ChatInterface /></ProtectedRoute>,
       },
-      // Legacy redirects
+      // Старые ссылки теперь ведут на список людей
       {
         path: 'collab',
         element: <Navigate to="/app/people" replace />,

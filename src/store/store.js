@@ -8,7 +8,7 @@ export const useAppStore = create((set, get) => ({
   user: null,
   isInitializing: true,
   loading: false,
-  
+
   checkAuth: async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -24,7 +24,7 @@ export const useAppStore = create((set, get) => ({
       set({ isInitializing: false });
     }
   },
-  
+
   login: async (email, password, demoUserData = null) => {
     set({ loading: true });
     try {
@@ -59,7 +59,7 @@ export const useAppStore = create((set, get) => ({
       return { success: false, error: error.message };
     }
   },
-  
+
   logout: async () => {
     try {
       await supabase.auth.signOut();
@@ -85,6 +85,53 @@ export const useAppStore = create((set, get) => ({
     }
   },
 
+  // Добавьте эти функции внутрь useAppStore:
+
+  // Удаление своего поста
+  deleteCheckpoint: async (checkpointId) => {
+    const { error } = await supabase
+      .from('goal_checkpoints')
+      .delete()
+      .eq('id', checkpointId);
+
+    if (!error) {
+      set(state => ({
+        feed: state.feed.filter(item => item.id !== checkpointId)
+      }));
+      return true;
+    }
+    return false;
+  },
+
+  // Получение данных ОДНОГО профиля по ID (Критерий: Read One)
+  fetchProfileById: async (id) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) return null;
+    return data;
+  },
+
+  // Функции для Админ-панели
+  adminData: { users: [], posts: [] },
+  fetchAdminData: async () => {
+    const [usersRes, postsRes] = await Promise.all([
+      supabase.from('profiles').select('*'),
+      supabase.from('goal_checkpoints').select('*, goals(title, user_id)')
+    ]);
+    if (!usersRes.error && !postsRes.error) {
+      set({ adminData: { users: usersRes.data, posts: postsRes.data } });
+    }
+  },
+
+  deleteAnyPost: async (id) => {
+    const { error } = await supabase.from('goal_checkpoints').delete().eq('id', id);
+    if (!error) get().fetchAdminData();
+  },
+
   // ==========================================
   // 2. ЛЕНТА (СОЦИАЛЬНАЯ СЕТЬ)
   // ==========================================
@@ -92,7 +139,7 @@ export const useAppStore = create((set, get) => ({
   feedPage: 0,
   hasMoreFeed: true,
   feedLoading: false,
-  
+
   fetchFeed: async (reset = false) => {
     if (get().feedLoading || (!reset && !get().hasMoreFeed)) return;
     set({ feedLoading: true });
@@ -107,7 +154,7 @@ export const useAppStore = create((set, get) => ({
         .select(`*, goals ( id, title, user_id ), reactions ( id, type, user_id )`)
         .order('created_at', { ascending: false })
         .range(from, to);
-        
+
       if (error) throw error;
 
       const mappedData = await Promise.all(data.map(async (item) => {
@@ -120,7 +167,7 @@ export const useAppStore = create((set, get) => ({
           .select('id, first_name, last_name, avatar_url')
           .eq('id', authorId)
           .single();
-        
+
         if (profile) return { ...item, profiles: profile };
 
         // Fallback: if it's the current user, use metadata
@@ -370,5 +417,8 @@ export const useAppStore = create((set, get) => ({
     set({ theme });
   }
 }));
+
+
+
 
 export const useAuthStore = useAppStore;
