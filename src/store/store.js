@@ -196,16 +196,23 @@ export const useAppStore = create((set, get) => ({
 
   deleteAnyPost: async (id) => {
     try {
-      // Пытаемся сначала удалить реакции вручную (на случай отсутствия CASCADE)
-      await supabase.from('reactions').delete().eq('checkpoint_id', id);
+      // 1. Удаляем все связанные данные вручную (FK constraints)
+      await Promise.all([
+        supabase.from('reactions').delete().eq('checkpoint_id', id),
+        supabase.from('comments').delete().eq('checkpoint_id', id),
+        supabase.from('notifications').delete().eq('content_id', id)
+      ]);
       
+      // 2. Теперь удаляем сам пост
       const { error } = await supabase.from('goal_checkpoints').delete().eq('id', id);
       if (error) throw error;
       
+      // 3. Обновляем локальные данные в админке
       get().fetchAdminData();
+      
       return { success: true };
     } catch (error) {
-      console.error('Ошибка удаления поста:', error);
+      console.error('Ошибка полного удаления поста:', error);
       return { success: false, error: error.message };
     }
   },

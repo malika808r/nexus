@@ -34,8 +34,8 @@ export default function CommunityRooms() {
             <MessageCircle size={28} />
           </div>
           <div>
-            <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Rooms</h1>
-            <p className="text-sm font-bold uppercase tracking-widest bg-blue-600/10 text-pink-600 px-3 py-1 rounded-full w-fit mt-1">Коммуникация созидателей</p>
+            <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{t('rooms.title')}</h1>
+            <p className="text-sm font-bold uppercase tracking-widest bg-blue-600/10 text-pink-600 px-3 py-1 rounded-full w-fit mt-1">{t('rooms.subtitle')}</p>
           </div>
         </div>
 
@@ -45,8 +45,7 @@ export default function CommunityRooms() {
               <Info size={24} className="text-blue-600" />
             </div>
             <p className="text-[15px] font-medium leading-relaxed opacity-70">
-              Комнаты — это место для свободного общения. Выбирайте тему, заходите и пишите. 
-              Здесь нет ленты, только живое обсуждение идей и планов в реальном времени.
+              {t('rooms.description')}
             </p>
           </div>
         </div>
@@ -80,7 +79,7 @@ export default function CommunityRooms() {
 
                <div className="mt-8 relative z-10">
                   <h3 className="text-2xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>{room.title}</h3>
-                  <p className="text-sm font-medium opacity-50">Присоединяйтесь к дискуссии</p>
+                  <p className="text-sm font-medium opacity-50">{t('rooms.description').split('.')[0]}</p>
                </div>
 
                <div className="mt-6 flex items-center gap-2 relative z-10">
@@ -91,7 +90,7 @@ export default function CommunityRooms() {
                        </div>
                      ))}
                   </div>
-                  <span className="text-[11px] font-black uppercase tracking-widest opacity-40">+{Math.max(0, room.count - 3)} others</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest opacity-40">+{Math.max(0, room.count - 3)} {t('common.others')}</span>
                </div>
             </motion.div>
           );
@@ -107,7 +106,7 @@ export default function CommunityRooms() {
            <div className="w-12 h-12 rounded-full border-2 border-dashed flex items-center justify-center mb-4 transition-colors group-hover:border-blue-500">
               <Plus size={24} />
            </div>
-           <p className="font-black uppercase tracking-widest text-[12px]">Создать свою комнату</p>
+           <p className="font-black uppercase tracking-widest text-[12px]">{t('rooms.createRoom')}</p>
         </motion.div>
       </div>
 

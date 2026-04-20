@@ -3,6 +3,7 @@ import { ArrowLeft, Send, Smile } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { useAppStore } from '../store/store';
+import { useTranslation } from 'react-i18next';
 
 const roomInfoMap = {
   'literature': { title: 'Literature & Cinema', emoji: '📖' },
@@ -23,9 +24,10 @@ export default function ChatInterface() {
   
   const messagesEndRef = useRef(null);
   const [chatPartner, setChatPartner] = useState(null);
+  const { t } = useTranslation();
   const roomInfo = roomId?.startsWith('private_') 
-    ? (chatPartner ? { title: `${chatPartner.first_name} ${chatPartner.last_name || ''}`, emoji: '👤' } : { title: 'Чат', emoji: '💬' })
-    : (roomInfoMap[roomId] || { title: 'Комната', emoji: '💬' });
+    ? (chatPartner ? { title: `${chatPartner.first_name} ${chatPartner.last_name || ''}`, emoji: '👤' } : { title: t('chats.privateChat'), emoji: '💬' })
+    : (roomInfoMap[roomId] || { title: t('chats.roomChat'), emoji: '💬' });
 
   useEffect(() => {
     if (user && roomId?.startsWith('private_')) {
@@ -205,7 +207,7 @@ export default function ChatInterface() {
             <span className="text-xl">{roomInfo.emoji}</span> {roomInfo.title}
           </h3>
           <p className="text-[11px] font-black uppercase tracking-widest mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {roomId?.startsWith('private_') ? 'Personal Chat' : 'Mood Room'}
+            {roomId?.startsWith('private_') ? t('chats.personalChat') : t('chats.moodRoom')}
           </p>
         </div>
       </div>
@@ -215,7 +217,7 @@ export default function ChatInterface() {
         {messages.length === 0 ? (
           <div className="text-center my-auto flex flex-col items-center">
             <div className="text-4xl mb-4">💬</div>
-            <p className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>Напишите первое сообщение! 👋</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>{t('chats.writeFirstMessage')}</p>
           </div>
         ) : (
           messages.map((msg) => {
@@ -277,7 +279,7 @@ export default function ChatInterface() {
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Написать сообщение..."
+            placeholder={t('chats.messagePlaceholder')}
             className="input-base flex-1"
           />
           <button 

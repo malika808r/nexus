@@ -1,45 +1,46 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, X, Sparkles, Target, LayoutGrid, Users } from 'lucide-react';
-
-const guideSteps = [
-  {
-    id: 'welcome',
-    title: 'Nexus: Созидайте вместе',
-    description: 'Добро пожаловать в социальную сеть для тех, кто не просто говорит, а делает. Здесь мы делимся реальными шагами к своим мечтам.',
-    icon: Sparkles,
-    color: '#0891b2'
-  },
-  {
-    id: 'people',
-    title: 'Находите единомышленников',
-    description: 'Раздел «Люди» — это сердце нашего комьюнити. Подписывайтесь на интересных билдеров, находите менторов и заводите полезные знакомства.',
-    icon: Users,
-    color: '#2563eb'
-  },
-  {
-    id: 'goals',
-    title: 'Ваши личные цели',
-    description: 'Ставьте амбициозные цели и разбивайте их на малые шаги. Ваш прогресс визуализируется, помогая не терять фокус и мотивацию.',
-    icon: Target,
-    color: '#059669'
-  },
-  {
-    id: 'feed',
-    title: 'Делитесь прогрессом',
-    description: 'В Ленте — только реальные отчеты о действиях. Реагируйте на успехи других, оставляйте комментарии и вдохновляйте сообщество своим примером.',
-    icon: LayoutGrid,
-    color: '#7c3aed'
-  }
-];
+import { useTranslation } from 'react-i18next';
 
 export default function InteractiveGuide({ isOpen, onClose }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const { t } = useTranslation();
+
+  const guideSteps = [
+    {
+      id: 'welcome',
+      title: t('guide.welcome.title'),
+      description: t('guide.welcome.description'),
+      icon: Sparkles,
+      color: '#0891b2'
+    },
+    {
+      id: 'people',
+      title: t('guide.people.title'),
+      description: t('guide.people.description'),
+      icon: Users,
+      color: '#2563eb'
+    },
+    {
+      id: 'goals',
+      title: t('guide.goals.title'),
+      description: t('guide.goals.description'),
+      icon: Target,
+      color: '#059669'
+    },
+    {
+      id: 'feed',
+      title: t('guide.feed.title'),
+      description: t('guide.feed.description'),
+      icon: LayoutGrid,
+      color: '#7c3aed'
+    }
+  ];
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      // Если гид открывается, сбрасываем на первый шаг
       setCurrentStep(0);
     } else {
       document.body.style.overflow = 'unset';
@@ -131,16 +132,16 @@ export default function InteractiveGuide({ isOpen, onClose }) {
 
               <div className="flex gap-3">
                 {currentStep > 0 && (
-                  <button onClick={handleBack} className="h-12 px-4 rounded-2xl font-bold text-sm bg-muted-foreground/10 hover:bg-muted-foreground/20 transition-all">
-                    Назад
+                  <button onClick={handleBack} className="h-12 px-4 rounded-2xl font-bold text-sm bg-muted-foreground/10 hover:bg-muted-foreground/20 transition-all font-outfit uppercase tracking-widest">
+                    {t('guide.back')}
                   </button>
                 )}
                 <button 
                   onClick={handleNext}
-                  className="btn-pulse h-12 px-6 flex items-center justify-center gap-2"
+                  className="btn-pulse h-12 px-6 flex items-center justify-center gap-2 font-black uppercase tracking-widest text-[13px]"
                   style={{ background: step.color }}
                 >
-                  {currentStep === guideSteps.length - 1 ? 'Погнали!' : 'Далее'}
+                  {currentStep === guideSteps.length - 1 ? t('guide.finish') : t('guide.next')}
                   <ChevronRight size={18} />
                 </button>
               </div>

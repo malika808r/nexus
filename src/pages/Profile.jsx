@@ -9,6 +9,7 @@ import {
 import EditProfileModal from '../components/profile/EditProfileModal';
 import { useToast } from '../components/ui/Toast';
 import { supabase } from '../supabase';
+import { useTranslation } from 'react-i18next';
 
 // Вспомогательный компонент для карточек статистики
 function DashboardCard({ title, value, sub, icon: Icon, color, delay }) {
@@ -39,6 +40,7 @@ export default function Profile() {
   const { id } = useParams(); // Получаем ID из URL для динамического роутинга
   const navigate = useNavigate();
   const { show } = useToast();
+  const { t, i18n } = useTranslation();
 
   // Достаем данные и функции из стора
   const {
@@ -87,34 +89,34 @@ export default function Profile() {
   const handleFollowAction = async () => {
     if (following.includes(currentId)) {
       await unfollowUser(currentId);
-      show('Вы отписались', 'info');
+      show(t('profile.unfollowed'), 'info');
     } else {
       await followUser(currentId);
-      show('Вы подписались!', 'success');
+      show(t('profile.followed'), 'success');
     }
   };
 
   const handleDeletePost = async (postId) => {
-    if (window.confirm("Удалить этот шаг из вашей истории?")) {
+    if (window.confirm(t('profile.deleteConfirm'))) {
       const ok = await deleteCheckpoint(postId);
-      if (ok) show("Запись удалена", "success");
+      if (ok) show(t('profile.deleteSuccess'), "success");
     }
   };
 
   if (loading && !targetUser) {
-    return <div className="p-20 text-center font-black animate-pulse" style={{ color: 'var(--text-primary)' }}>Загрузка профиля...</div>;
+    return <div className="p-20 text-center font-black animate-pulse" style={{ color: 'var(--text-primary)' }}>{t('profile.loadingProfile')}</div>;
   }
 
   // Данные профиля для отображения
   const profileData = isOwnProfile ? {
     firstName: user?.user_metadata?.firstName || 'Malika',
     lastName: user?.user_metadata?.lastName || '',
-    bio: user?.user_metadata?.bio || 'Строю будущее, шаг за шагом.',
+    bio: user?.user_metadata?.bio || t('profile.defaultBio'),
     avatarUrl: user?.user_metadata?.avatarUrl || null,
   } : {
     firstName: targetUser?.first_name || 'Builder',
     lastName: targetUser?.last_name || '',
-    bio: targetUser?.bio || 'Участник сообщества Nexus.',
+    bio: targetUser?.bio || t('profile.memberBio'),
     avatarUrl: targetUser?.avatar_url || null,
   };
 
@@ -144,13 +146,13 @@ export default function Profile() {
                 {profileData.firstName} {profileData.lastName}
               </h1>
               <div className="px-3 py-1 bg-emerald-500/10 text-emerald-600 rounded-full text-[11px] font-black uppercase tracking-widest border border-emerald-500/20">
-                <ShieldCheck size={12} className="inline mr-1" /> Verified
+                <ShieldCheck size={12} className="inline mr-1" /> {t('common.verified')}
               </div>
             </div>
 
             <div className="flex gap-6 mb-6 justify-center md:justify-start text-sm">
-              <div><span className="font-black">{targetStats.followers}</span> <span className="opacity-50">подписчиков</span></div>
-              <div><span className="font-black">{targetStats.following}</span> <span className="opacity-50">подписок</span></div>
+              <div><span className="font-black">{targetStats.followers}</span> <span className="opacity-50">{t('profile.followers')}</span></div>
+              <div><span className="font-black">{targetStats.following}</span> <span className="opacity-50">{t('profile.following')}</span></div>
             </div>
 
             <p className="text-lg font-medium opacity-50 mb-8 max-w-xl leading-relaxed">
@@ -162,7 +164,7 @@ export default function Profile() {
                 <>
                   <button onClick={() => setIsEditModalOpen(true)}
                     className="h-12 px-8 rounded-2xl font-black text-[14px] bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xl active:scale-95 transition-all">
-                    Редактировать
+                    {t('profile.edit')}
                   </button>
                   <button onClick={async () => { await logout(); navigate('/'); }}
                     className="h-12 px-6 rounded-2xl font-black border-2 hover:bg-red-500 hover:text-white transition-all opacity-40 hover:opacity-100"
@@ -174,7 +176,7 @@ export default function Profile() {
                 <div className="flex gap-3">
                   <button onClick={handleFollowAction}
                     className={`h-12 px-8 rounded-2xl font-black text-[14px] shadow-xl active:scale-95 transition-all ${following.includes(currentId) ? 'bg-muted-foreground/10 text-primary' : 'bg-blue-600 text-white'}`}>
-                    {following.includes(currentId) ? 'Отписаться' : 'Подписаться'}
+                    {following.includes(currentId) ? t('people.unfollow') : t('people.follow')}
                   </button>
                   <button 
                     onClick={() => {
@@ -185,7 +187,7 @@ export default function Profile() {
                     style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                   >
                     <MessageCircle size={18} />
-                    Написать
+                    {t('common.write')}
                   </button>
                 </div>
               )}
@@ -196,9 +198,9 @@ export default function Profile() {
 
       {/* STATISTICS MATRIX */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-        <DashboardCard title="Пульс Энергии" value="84" sub="+12% к неделе" icon={Zap} color="#3b82f6" delay={0.1} />
-        <DashboardCard title="Цели" value={userGoals?.length || 0} sub="В процессе" icon={Target} color="#10b981" delay={0.2} />
-        <DashboardCard title="Подписчики" value={targetStats.followers} sub="Сообщество" icon={Search} color="#8b5cf6" delay={0.3} />
+        <DashboardCard title={t('profile.pulse')} value="84" sub={t('profile.pulseSub')} icon={Zap} color="#3b82f6" delay={0.1} />
+        <DashboardCard title={t('profile.activeGoals')} value={userGoals?.length || 0} sub={t('profile.goalsInProgress')} icon={Target} color="#10b981" delay={0.2} />
+        <DashboardCard title={t('profile.followers')} value={targetStats.followers} sub={t('profile.communityStats')} icon={Search} color="#8b5cf6" delay={0.3} />
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -206,13 +208,13 @@ export default function Profile() {
         <div className="lg:col-span-1">
           <div className="card p-6 bg-muted-foreground/5 border-none shadow-xl">
             <h3 className="text-[12px] font-black uppercase tracking-widest opacity-40 mb-6 flex items-center gap-2">
-              <MapPin size={14} /> Локация
+              <MapPin size={14} /> {t('profile.location')}
             </h3>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl">🏔️</div>
               <div>
-                <div className="font-black text-base" style={{ color: 'var(--text-primary)' }}>Бишкек</div>
-                <div className="text-xs font-bold text-blue-600">Созидатель</div>
+                <div className="font-black text-base" style={{ color: 'var(--text-primary)' }}>{t('profile.bishkek')}</div>
+                <div className="text-xs font-bold text-blue-600">{t('profile.creator')}</div>
               </div>
             </div>
           </div>
@@ -221,7 +223,7 @@ export default function Profile() {
         {/* RIGHT COLUMN: TIMELINE (CRUD: Read/Delete) */}
         <div className="lg:col-span-2 space-y-8">
           <h3 className="text-[12px] font-black uppercase tracking-widest opacity-40 flex items-center gap-2 px-2">
-            <Activity size={14} /> Хроника достижений
+            <Activity size={14} /> {t('profile.timeline')}
           </h3>
 
           <div className="space-y-4">
@@ -234,7 +236,7 @@ export default function Profile() {
                   <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600 opacity-20 group-hover:opacity-100 transition-opacity" />
                   <div className="flex items-start justify-between mb-4">
                     <div className="text-[11px] font-bold opacity-40">
-                      {new Date(cp.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
+                      {new Date(cp.created_at).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' })}
                     </div>
                     {/* DELETE ACTION (Критерий ТЗ) */}
                     {isOwnProfile && (
@@ -257,7 +259,7 @@ export default function Profile() {
               ))
             ) : (
               <div className="card p-12 text-center border-dashed border-2 opacity-30">
-                <p className="text-sm font-black uppercase tracking-widest">Здесь пока пусто</p>
+                <p className="text-sm font-black uppercase tracking-widest">{t('profile.noSteps')}</p>
               </div>
             )}
           </div>

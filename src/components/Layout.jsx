@@ -25,7 +25,9 @@ function ThemeToggle() {
 
 const getNavItems = (t) => [
   { path: "/app/feed", icon: Home, label: t('nav.feed') },
+  { path: "/app/goals", icon: Target, label: t('nav.goals') },
   { isAction: true },
+  { path: "/app/people", icon: Users, label: t('nav.people') },
   { path: "/app/profile", icon: User, label: t('nav.profile') },
 ];
 
@@ -105,7 +107,7 @@ function SideNav({ onCreateOpen }) {
             className="btn-pulse w-full flex items-center gap-3 px-4 py-3.5 mb-6 shadow-xl"
           >
             <Plus size={20} strokeWidth={3} />
-            Опубликовать
+            {t('common.publish')}
           </motion.button>
 
           <div className="space-y-1">
@@ -131,23 +133,13 @@ function SideNav({ onCreateOpen }) {
                 </Link>
               );
             })}
-
-            <Link to="/app/goals" className={`group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[15px] font-bold transition-all ${isActive('/app/goals') ? 'bg-[var(--bg-input)] filter-none' : 'text-[var(--text-secondary)]'} `} style={{ color: isActive('/app/goals') ? "var(--text-primary)" : "var(--text-secondary)" }}>
-              <Target size={20} style={{ color: isActive('/app/goals') ? "var(--color-brand-primary)" : "inherit" }} />
-              <span>Мои цели</span>
-            </Link>
-
-            <Link to="/app/people" className={`group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[15px] font-bold transition-all ${isActive('/app/people') ? 'bg-[var(--bg-input)] ' : 'text-[var(--text-secondary)]'}`} style={{ color: isActive('/app/people') ? "var(--text-primary)" : "var(--text-secondary)" }}>
-              <Users size={20} style={{ color: isActive('/app/people') ? "var(--color-brand-primary)" : "inherit" }} />
-              <span>Люди</span>
-            </Link>
           </div>
         </nav>
         {/* Кнопка админки (показываем только если это ваш email) */}
         {useAppStore(state => state.user)?.email === 'malikaraiymm@gmail.com' && (
           <Link to="/app/admin" className={`group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[15px] font-bold transition-all ${isActive('/app/admin') ? 'bg-red-500/10 text-red-500' : 'text-[var(--text-secondary)]'}`}>
             <Shield size={20} className={isActive('/app/admin') ? "text-red-500" : ""} />
-            <span>Админ-панель</span>
+            <span>{t('nav.admin')}</span>
           </Link>
         )}
 
@@ -157,7 +149,7 @@ function SideNav({ onCreateOpen }) {
             className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[14px] font-bold transition-all ${isActive('/app/support') ? 'bg-muted-foreground/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
           >
             <HelpCircle size={18} />
-            Поддержка
+            {t('common.help')}
           </Link>
 
           <div className="flex items-center justify-between px-2">
@@ -170,7 +162,7 @@ function SideNav({ onCreateOpen }) {
               className="flex items-center gap-2 text-[12px] font-black uppercase tracking-widest px-3 py-2 rounded-xl bg-muted-foreground/5 hover:bg-muted-foreground/10 transition-all font-outfit"
               style={{ color: "var(--text-muted)" }}
             >
-              <Sparkles size={14} /> Гид
+              <Sparkles size={14} /> {t('common.guide')}
             </button>
           </div>
         </div>
@@ -209,10 +201,10 @@ export default function Layout() {
           <div className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 mb-4 backdrop-blur-3xl border shadow-sm rounded-b-[2rem] md:rounded-[2rem] md:mt-2"
             style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg md:hidden">
-                <Sparkles size={18} />
+              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg md:hidden">
+                <Sparkles size={20} />
               </div>
-              <h2 className="font-black text-lg tracking-tight md:hidden">Nexus</h2>
+              <h2 className="font-black text-xl tracking-tight md:hidden" style={{ color: 'var(--text-primary)' }}>N</h2>
             </div>
 
             <div className="flex items-center gap-4">

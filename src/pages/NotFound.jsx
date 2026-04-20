@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function NotFound() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: 'var(--bg-base)' }}>
       <div className="text-center max-w-sm">
@@ -15,10 +17,10 @@ export default function NotFound() {
           404
         </motion.div>
         
-        <h1 className="text-2xl font-black mb-4" style={{ color: 'var(--text-primary)' }}>Путь не найден</h1>
+        <h1 className="text-2xl font-black mb-4" style={{ color: 'var(--text-primary)' }}>{t('common.notFound')}</h1>
         
         <p className="text-[15px] leading-relaxed mb-8" style={{ color: 'var(--text-secondary)' }}>
-          Кажется, эта амбиция завела нас в тупик. Попробуйте вернуться на главную страницу приложения.
+          {t('common.notFoundDesc')}
         </p>
 
         <Link to="/app" 
@@ -26,7 +28,7 @@ export default function NotFound() {
           style={{ backgroundColor: 'var(--text-primary)', color: 'var(--bg-base)' }}
         >
           <Home size={20} />
-          В ленту Nexus
+          {t('common.backToFeed')}
         </Link>
       </div>
     </div>

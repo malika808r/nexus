@@ -36,12 +36,12 @@ export default function Welcome() {
           </div>
           <span className="font-black text-xl tracking-tight" style={{ color: 'var(--text-primary)' }}>NEXUS</span>
         </div>
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 md:gap-8">
           <LanguageToggle />
-          <button onClick={() => navigate('/auth/login')} className="text-[14px] font-bold opacity-60 hover:opacity-100 transition-opacity" style={{ color: 'var(--text-primary)' }}>{t('welcomeHero.loginLink')}</button>
+          <button onClick={() => navigate('/auth/login')} className="text-[14px] font-bold opacity-60 hover:opacity-100 transition-opacity hidden sm:block" style={{ color: 'var(--text-primary)' }}>{t('welcomeHero.loginLink')}</button>
           <button
             onClick={() => navigate('/auth/register')}
-            className="h-12 px-8 rounded-full text-white text-[14px] font-bold hover:scale-105 transition-all shadow-2xl"
+            className="h-10 md:h-12 px-4 md:px-8 rounded-full text-white text-[13px] md:text-[14px] font-bold hover:scale-105 transition-all shadow-2xl shrink-0"
             style={{ backgroundColor: 'var(--text-primary)', color: 'var(--bg-base)' }}
           >
             {t('welcomeHero.joinBtn')}
@@ -53,14 +53,16 @@ export default function Welcome() {
       <main className="flex-1 flex flex-col items-center justify-center px-6 text-center relative z-10 py-12 md:py-32">
         
         {/* Animated Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-          className="mb-10 inline-flex items-center gap-3 px-6 py-2 rounded-full border border-muted-foreground/10"
-          style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
-        >
-          <Sparkles size={14} className="text-blue-500" />
-          <span className="text-[12px] font-bold uppercase tracking-widest opacity-60">{t('welcomeHero.badge')}</span>
-        </motion.div>
+        {t('welcomeHero.badge') && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
+            className="mb-10 inline-flex items-center gap-3 px-6 py-2 rounded-full border border-muted-foreground/10"
+            style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
+          >
+            <Sparkles size={14} className="text-blue-500" />
+            <span className="text-[12px] font-bold uppercase tracking-widest opacity-60">{t('welcomeHero.badge')}</span>
+          </motion.div>
+        )}
 
         {/* Hero Title */}
         <motion.h1
@@ -156,11 +158,11 @@ export default function Welcome() {
 
       {/* Footer */}
       <footer className="px-12 py-10 flex flex-col md:flex-row items-center justify-between border-t z-50" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-base)' }}>
-        <span className="text-[13px] font-bold opacity-30 tracking-widest">© 2026 NEXUS ECOSYSTEM</span>
+        <span className="text-[13px] font-bold opacity-30 tracking-widest">© 2026</span>
         <div className="flex gap-12 mt-6 md:mt-0">
-          <span onClick={() => handleSupportClick('Manifesto')} className="text-[12px] font-black uppercase tracking-widest opacity-30 hover:opacity-100 cursor-pointer transition-opacity">Manifesto</span>
-          <span onClick={() => handleSupportClick('Privacy Policy')} className="text-[12px] font-black uppercase tracking-widest opacity-30 hover:opacity-100 cursor-pointer transition-opacity">Privacy Policy</span>
-          <span onClick={() => handleSupportClick('Contact Us')} className="text-[12px] font-black uppercase tracking-widest opacity-30 hover:opacity-100 cursor-pointer transition-opacity">Contact Us</span>
+          <span onClick={() => handleSupportClick(t('welcomeHero.manifesto'))} className="text-[12px] font-black uppercase tracking-widest opacity-30 hover:opacity-100 cursor-pointer transition-opacity">{t('welcomeHero.manifesto')}</span>
+          <span onClick={() => handleSupportClick(t('welcomeHero.privacy'))} className="text-[12px] font-black uppercase tracking-widest opacity-30 hover:opacity-100 cursor-pointer transition-opacity">{t('welcomeHero.privacy')}</span>
+          <span onClick={() => handleSupportClick(t('welcomeHero.contact'))} className="text-[12px] font-black uppercase tracking-widest opacity-30 hover:opacity-100 cursor-pointer transition-opacity">{t('welcomeHero.contact')}</span>
         </div>
       </footer>
     </div>

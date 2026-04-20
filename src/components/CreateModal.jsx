@@ -1,13 +1,15 @@
 import { useState, useRef } from "react";
-import { X, Image as ImageIcon, Loader2, Target, ChevronRight, Plus } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "../store/store";
 import { useToast } from "./ui/Toast";
 import { supabase } from "../supabase";
+import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Image as ImageIcon, Loader2 } from "lucide-react";
 
 export default function CreateModal({ isOpen, onClose }) {
   const { userGoals, addCheckpoint, addGoal, user } = useAppStore();
   const { show } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const [checkpointText, setCheckpointText] = useState("");
@@ -58,7 +60,7 @@ export default function CreateModal({ isOpen, onClose }) {
            goalId = userGoals[0].id;
         } else {
            // Create a default life goal
-           const g = await addGoal("Мой путь");
+           const g = await addGoal(t('feed.defaultGoal'));
            if (g) goalId = g.id;
         }
       }
@@ -67,13 +69,13 @@ export default function CreateModal({ isOpen, onClose }) {
       if (imageFile) imageUrl = await uploadImage(imageFile);
       const ok = await addCheckpoint(goalId, checkpointText, imageUrl);
       if (ok) {
-        show("Шаг опубликован в ленте! 🎉", "success");
+        show(t('feed.successPublish'), "success");
         handleClose();
       } else {
-        show("Ошибка публикации", "error");
+        show(t('common.error'), "error");
       }
     } catch (err) {
-      show("Ошибка при сохранении", "error");
+      show(t('common.error'), "error");
     } finally {
       setLoading(false);
     }
@@ -109,9 +111,9 @@ export default function CreateModal({ isOpen, onClose }) {
               <div className="flex items-center justify-between mb-7">
                 <div>
                   <h3 className="text-[22px] font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
-                    Поделиться шагом
+                    {t('feed.shareStep')}
                   </h3>
-                  <p className="text-[13px] font-medium opacity-40 mt-0.5">Что вы сделали сегодня?</p>
+                  <p className="text-[13px] font-medium opacity-40 mt-0.5">{t('feed.whatYouDid')}</p>
                 </div>
                 <button onClick={handleClose}
                   className="w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-muted-foreground/10"
@@ -125,7 +127,7 @@ export default function CreateModal({ isOpen, onClose }) {
                 {userGoals?.length > 0 ? (
                   <div>
                     <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-2" style={{ color: "var(--text-secondary)" }}>
-                      К какой цели?
+                      {t('feed.toWhichGoal')}
                     </label>
                     <select
                       value={selectedGoalId}
@@ -133,18 +135,18 @@ export default function CreateModal({ isOpen, onClose }) {
                       className="input-base text-sm"
                       style={{ color: "var(--text-primary)" }}
                     >
-                      <option value="">Без цели / свободный шаг</option>
+                      <option value="">{t('feed.noGoalSelected')}</option>
                       {userGoals.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}
                     </select>
                   </div>
                 ) : (
                   <div>
                     <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-2" style={{ color: "var(--text-secondary)" }}>
-                      Назовите вашу цель (необязательно)
+                      {t('feed.goalNamePlaceholder')}
                     </label>
                     <input
                       type="text"
-                      placeholder="Например: Научиться программировать"
+                      placeholder={t('feed.goalExample')}
                       value={newGoalTitle}
                       onChange={e => setNewGoalTitle(e.target.value)}
                       className="input-base text-sm"
@@ -155,12 +157,12 @@ export default function CreateModal({ isOpen, onClose }) {
                 {/* Post text */}
                 <div>
                   <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-2" style={{ color: "var(--text-secondary)" }}>
-                    Ваш шаг *
+                    {t('feed.shareStep')} *
                   </label>
                   <textarea
                     value={checkpointText}
                     onChange={e => setCheckpointText(e.target.value)}
-                    placeholder="Опишите что конкретно вы сделали..."
+                    placeholder={t('feed.stepPlaceholder')}
                     rows={4}
                     className="input-base resize-none text-[15px]"
                     autoFocus
@@ -184,7 +186,7 @@ export default function CreateModal({ isOpen, onClose }) {
                   ) : (
                     <>
                       <ImageIcon size={22} className="mb-1.5 opacity-30" />
-                      <span className="text-[11px] font-black uppercase tracking-widest opacity-30">Добавить фото</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest opacity-30">{t('feed.addPhoto')}</span>
                     </>
                   )}
                 </div>
@@ -196,7 +198,7 @@ export default function CreateModal({ isOpen, onClose }) {
                   className="btn-pulse w-full flex items-center justify-center gap-2 mt-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {loading && <Loader2 size={18} className="animate-spin" />}
-                  {loading ? "Публикация..." : "Опубликовать в ленту"}
+                  {loading ? t('feed.publishing') : t('feed.publishToFeed')}
                 </button>
               </div>
             </div>

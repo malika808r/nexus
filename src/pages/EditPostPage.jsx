@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/store';
-import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Save, ChevronLeft, Loader2, Edit3, Trash2 } from 'lucide-react';
 import { useToast } from '../components/ui/Toast';
+import { useTranslation } from 'react-i18next';
 
 export default function EditPostPage() {
   const { id } = useParams();
@@ -14,6 +15,7 @@ export default function EditPostPage() {
   const [post, setPost] = useState(null);
   const navigate = useNavigate();
   const { show } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const loadPost = async () => {
@@ -21,14 +23,14 @@ export default function EditPostPage() {
       if (data) {
         // Проверка владельца
         if (data.goals?.user_id !== user?.id) {
-          show('У вас нет прав для редактирования этого поста', 'error');
+          show(t('common.error'), 'error');
           navigate('/app/feed');
           return;
         }
         setPost(data);
         setContent(data.content);
       } else {
-        show('Пост не найден', 'error');
+        show(t('common.noResults'), 'error');
         navigate('/app/feed');
       }
       setInitialLoading(false);
@@ -44,24 +46,24 @@ export default function EditPostPage() {
     const result = await updateCheckpoint(id, content.trim());
     
     if (result.success) {
-      show('Изменения сохранены!', 'success');
+      show(t('common.success'), 'success');
       navigate('/app/feed');
     } else {
-      show('Ошибка при сохранении: ' + result.error, 'error');
+      show(t('common.error') + ': ' + result.error, 'error');
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Вы уверены, что хотите удалить этот шаг? Это действие необратимо.')) return;
+    if (!window.confirm(t('common.confirmDelete'))) return;
     
     setIsSubmitting(true);
     const success = await deleteCheckpoint(id);
     if (success) {
-      show('Запись удалена', 'info');
+      show(t('feed.deleteSuccess'), 'info');
       navigate('/app/feed');
     } else {
-      show('Ошибка при удалении', 'error');
+      show(t('common.error'), 'error');
       setIsSubmitting(false);
     }
   };
@@ -80,7 +82,7 @@ export default function EditPostPage() {
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-[12px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity mb-8"
       >
-        <ChevronLeft size={16} /> Назад
+        <ChevronLeft size={16} /> {t('common.back')}
       </button>
 
       <div className="flex items-center justify-between mb-10">
@@ -90,15 +92,15 @@ export default function EditPostPage() {
             <Edit3 size={28} />
           </div>
           <div>
-            <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Редактирование</h1>
-            <p className="text-[12px] font-black uppercase tracking-widest opacity-40 mt-0.5">Обновите свой результат</p>
+            <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{t('feed.editingPost')}</h1>
+            <p className="text-[12px] font-black uppercase tracking-widest opacity-40 mt-0.5">{t('feed.createPost')}</p>
           </div>
         </div>
 
         <button
           onClick={handleDelete}
           className="w-12 h-12 rounded-2xl flex items-center justify-center text-red-500 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 transition-all active:scale-90"
-          title="Удалить запись"
+          title={t('common.delete')}
         >
           <Trash2 size={20} />
         </button>
@@ -110,17 +112,17 @@ export default function EditPostPage() {
         className="card p-8"
       >
         <div className="mb-6 p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10">
-          <p className="text-[11px] font-black uppercase tracking-widest opacity-40 mb-1">Относится к цели</p>
+          <p className="text-[11px] font-black uppercase tracking-widest opacity-40 mb-1">{t('feed.selectGoal')}</p>
           <p className="text-[15px] font-black text-blue-600">{post?.goals?.title}</p>
         </div>
 
         <form onSubmit={handleUpdate} className="space-y-6">
           <div>
-            <label className="text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 block">Текст записи</label>
+            <label className="text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 block">{t('feed.editingPost')}</label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Опишите ваши достижения..."
+              placeholder={t('feed.stepPlaceholder')}
               className="w-full h-40 p-5 rounded-2xl border-2 outline-none transition-all text-[15px] font-medium leading-relaxed resize-none focus:border-blue-500/40"
               style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             />
@@ -136,7 +138,7 @@ export default function EditPostPage() {
             ) : (
               <>
                 <Save size={20} />
-                Сохранить изменения
+                {t('common.save')}
               </>
             )}
           </button>

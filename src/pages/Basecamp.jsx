@@ -3,6 +3,7 @@ import { useAppStore } from '../store/store';
 import { Target, Trophy, Sparkles, BookOpen, Clock, X, Zap, TrendingUp, Calendar, CheckCircle2, BarChart3, Flame, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabase';
+import { useTranslation } from 'react-i18next';
 
 // ─── Goal Tracker Modal ─────────────────────────────────────────────
 function GoalTrackerModal({ goal, onClose }) {
@@ -10,6 +11,7 @@ function GoalTrackerModal({ goal, onClose }) {
   const [checkpoints, setCheckpoints] = useState([]);
   const [newStep, setNewStep] = useState('');
   const [adding, setAdding] = useState(false);
+  const { t, i18n } = useTranslation();
 
   // Filter checkpoints for this goal
   useEffect(() => {
@@ -23,12 +25,12 @@ function GoalTrackerModal({ goal, onClose }) {
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
-    return d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
+    return d.toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric' });
   });
 
   const activityMap = {};
   checkpoints.forEach(cp => {
-    const key = new Date(cp.created_at).toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
+    const key = new Date(cp.created_at).toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric' });
     activityMap[key] = (activityMap[key] || 0) + 1;
   });
   const maxActivity = Math.max(...last7.map(d => activityMap[d] || 0), 1);
@@ -38,7 +40,7 @@ function GoalTrackerModal({ goal, onClose }) {
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    const key = d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric' });
+    const key = d.toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric' });
     if (activityMap[key]) streak++;
     else if (i < 6) break;
   }
@@ -83,7 +85,7 @@ function GoalTrackerModal({ goal, onClose }) {
                 {goal.title}
               </h2>
               <p className="text-[12px] font-black uppercase tracking-widest mt-1 opacity-40">
-                Создано {new Date(goal.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {t('goals.tracker.created')} {new Date(goal.created_at).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' })}
               </p>
             </div>
           </div>
@@ -98,18 +100,18 @@ function GoalTrackerModal({ goal, onClose }) {
         <div className="flex-1 overflow-y-auto px-8 py-6 space-y-8 no-scrollbar">
 
           {/* ── Stat Cards ── */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {[
-              { label: 'Шагов', value: checkpoints.length, icon: Zap, color: '#3b82f6' },
-              { label: 'Прогресс', value: `${progress}%`, icon: TrendingUp, color: '#10b981' },
-              { label: 'Серия', value: `${streak}д`, icon: Flame, color: '#f59e0b' },
+              { label: t('goals.tracker.steps'), value: checkpoints.length, icon: Zap, color: '#3b82f6' },
+              { label: t('goals.tracker.progress'), value: `${progress}%`, icon: TrendingUp, color: '#10b981' },
+              { label: t('goals.tracker.streak'), value: `${streak}${t('goals.tracker.days')}`, icon: Flame, color: '#f59e0b' },
             ].map(s => (
-              <div key={s.label} className="card p-5 border-none shadow-lg flex flex-col items-center text-center relative overflow-hidden">
+              <div key={s.label} title={s.label} className="card p-4 md:p-5 border-none shadow-lg flex flex-col items-center text-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-12 h-12 blur-2xl opacity-20 rounded-full" style={{ backgroundColor: s.color }} />
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: `${s.color}18`, color: s.color }}>
                   <s.icon size={20} />
                 </div>
-                <div className="text-3xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>{s.value}</div>
+                <div className="text-2xl md:text-3xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>{s.value}</div>
                 <div className="text-[10px] font-black uppercase tracking-widest opacity-40">{s.label}</div>
               </div>
             ))}
@@ -119,10 +121,10 @@ function GoalTrackerModal({ goal, onClose }) {
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-[12px] font-black uppercase tracking-widest opacity-40 flex items-center gap-2">
-                <BarChart3 size={14} /> Общий прогресс
+                <BarChart3 size={14} /> {t('goals.tracker.totalProgress')}
               </span>
               <span className="text-[13px] font-black" style={{ color: progress === 100 ? '#10b981' : 'var(--color-brand-primary)' }}>
-                {progress === 100 ? '✓ Завершено!' : `${progress}%`}
+                {progress === 100 ? t('goals.tracker.finished') : `${progress}%`}
               </span>
             </div>
             <div className="relative h-4 bg-muted-foreground/10 rounded-full overflow-hidden">
@@ -143,8 +145,8 @@ function GoalTrackerModal({ goal, onClose }) {
             </div>
             <p className="text-[12px] font-medium opacity-50 mt-2">
               {checkpoints.length === 0
-                ? 'Добавьте первый шаг ниже, чтобы начать трекинг'
-                : `Ещё ${Math.max(0, 5 - checkpoints.length)} шагов до 100% — не останавливайтесь!`}
+                ? t('goals.tracker.addFirstStep')
+                : t('goals.tracker.stepsRemaining', { count: Math.max(0, 5 - checkpoints.length) })}
             </p>
           </div>
 
@@ -152,7 +154,7 @@ function GoalTrackerModal({ goal, onClose }) {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Calendar size={14} className="opacity-40" />
-              <h4 className="text-[12px] font-black uppercase tracking-widest opacity-40">Активность за 7 дней</h4>
+              <h4 className="text-[12px] font-black uppercase tracking-widest opacity-40">{t('goals.tracker.activity7Days')}</h4>
             </div>
             <div className="flex items-end gap-2 h-20">
               {last7.map((day, i) => {
@@ -189,14 +191,14 @@ function GoalTrackerModal({ goal, onClose }) {
           {/* ── Add new step ── */}
           <div>
             <h4 className="text-[12px] font-black uppercase tracking-widest opacity-40 mb-3 flex items-center gap-2">
-              <Plus size={14} /> Добавить шаг
+              <Plus size={14} /> {t('goals.tracker.addStep')}
             </h4>
             <form onSubmit={handleAddStep} className="flex gap-3">
               <input
                 type="text"
                 value={newStep}
                 onChange={e => setNewStep(e.target.value)}
-                placeholder="Что вы сделали сегодня?"
+                placeholder={t('goals.tracker.stepPrompt')}
                 className="input-base flex-1 text-sm"
               />
               <button
@@ -205,7 +207,7 @@ function GoalTrackerModal({ goal, onClose }) {
                 className="px-6 h-14 rounded-2xl font-bold text-sm text-white transition-all active:scale-95 disabled:opacity-50 shrink-0"
                 style={{ background: 'linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-secondary))' }}
               >
-                {adding ? '...' : 'Записать'}
+                {adding ? '...' : t('goals.tracker.record')}
               </button>
             </form>
           </div>
@@ -213,13 +215,13 @@ function GoalTrackerModal({ goal, onClose }) {
           {/* ── Checkpoints Timeline ── */}
           <div>
             <h4 className="text-[12px] font-black uppercase tracking-widest opacity-40 mb-4 flex items-center gap-2">
-              <CheckCircle2 size={14} /> История шагов ({checkpoints.length})
+              <CheckCircle2 size={14} /> {t('goals.tracker.history')} ({checkpoints.length})
             </h4>
             {checkpoints.length === 0 ? (
               <div className="text-center py-10 border-2 border-dashed rounded-2xl opacity-20">
                 <Zap size={32} className="mx-auto mb-3" />
-                <p className="text-sm font-black uppercase tracking-widest">Пока нет шагов</p>
-                <p className="text-xs mt-1">Добавьте первый шаг выше</p>
+                <p className="text-sm font-black uppercase tracking-widest">{t('goals.tracker.noSteps')}</p>
+                <p className="text-xs mt-1">{t('goals.tracker.addStepAbove')}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -237,7 +239,7 @@ function GoalTrackerModal({ goal, onClose }) {
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-medium leading-snug" style={{ color: 'var(--text-primary)' }}>{cp.content}</p>
                       <p className="text-[11px] font-bold uppercase tracking-widest opacity-30 mt-1">
-                        {new Date(cp.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                        {new Date(cp.created_at).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                     <span className="text-[10px] font-black text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full shrink-0 mt-0.5">+1</span>
@@ -253,12 +255,12 @@ function GoalTrackerModal({ goal, onClose }) {
         <div className="px-8 py-5 border-t shrink-0" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--bg-card)' }}>
           <div className="flex items-center justify-between">
             <p className="text-[12px] font-bold opacity-40">
-              {progress === 100 ? '🎉 Цель достигнута! Отличная работа!' : `Продолжайте — ты на ${progress}% пути!`}
+              {progress === 100 ? t('goals.tracker.congrats') : t('goals.tracker.keepGoing', { progress })}
             </p>
             <button onClick={onClose}
               className="px-6 py-2.5 rounded-xl text-[13px] font-bold transition-all hover:bg-muted-foreground/10"
               style={{ color: 'var(--text-muted)' }}>
-              Закрыть
+              {t('goals.tracker.close')}
             </button>
           </div>
         </div>
@@ -273,6 +275,7 @@ export default function Basecamp() {
   const [newGoal, setNewGoal] = useState('');
   const [activeTab, setActiveTab] = useState('goals');
   const [selectedGoal, setSelectedGoal] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (user?.id) fetchUserGoalsAndCheckpoints(user.id);
@@ -297,8 +300,8 @@ export default function Basecamp() {
             <Target size={28} />
           </div>
           <div>
-            <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Мои цели</h1>
-            <p className="text-sm font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-600 px-3 py-1 rounded-full w-fit mt-1">Твой личный трекер развития</p>
+            <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{t('goals.title')}</h1>
+            <p className="text-sm font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-600 px-3 py-1 rounded-full w-fit mt-1">{t('goals.subtitle')}</p>
           </div>
         </div>
 
@@ -308,7 +311,7 @@ export default function Basecamp() {
               <Sparkles size={24} className="text-cyan-600" />
             </div>
             <p className="text-[15px] font-medium leading-relaxed opacity-70">
-              Ставьте амбициозные цели, разбивайте их на малые шаги и следите за реальным ростом. Нажмите <strong>«Открыть трекер»</strong> чтобы увидеть аналитику.
+              {t('goals.description')}
             </p>
           </div>
         </div>
@@ -317,7 +320,7 @@ export default function Basecamp() {
       {/* Tabs */}
       <div className="flex gap-8 mb-8 border-b" style={{ borderColor: 'var(--border)' }}>
         {[
-          { id: 'goals', label: 'Мои цели', icon: Target },
+          { id: 'goals', label: t('goals.title'), icon: Target },
           { id: 'edu', label: 'Knowledge Hub', icon: BookOpen }
         ].map(tab => (
           <button
@@ -340,16 +343,16 @@ export default function Basecamp() {
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} key="goals" className="space-y-6">
 
             {/* Add Goal Input */}
-            <form onSubmit={handleAddGoal} className="flex gap-4 mb-10">
+            <form onSubmit={handleAddGoal} className="flex flex-col md:flex-row gap-4 mb-10">
               <input
                 type="text"
                 value={newGoal}
                 onChange={(e) => setNewGoal(e.target.value)}
-                placeholder="Чего вы хотите достичь?"
-                className="input-base flex-1 shadow-sm"
+                placeholder={t('goals.addPlaceholder')}
+                className="input-base flex-1 shadow-sm h-14"
               />
-              <button type="submit" disabled={!newGoal.trim()} className="btn-pulse px-8 h-14 disabled:opacity-50" style={{ background: '#000', color: '#fff' }}>
-                Поставить цель
+              <button type="submit" disabled={!newGoal.trim()} className="btn-pulse px-8 h-14 disabled:opacity-50 shrink-0" style={{ background: '#000', color: '#fff' }}>
+                {t('goals.addBtn')}
               </button>
             </form>
 
@@ -358,8 +361,8 @@ export default function Basecamp() {
               {!userGoals || userGoals.length === 0 ? (
                 <div className="col-span-2 text-center py-20 border-2 border-dashed rounded-[3rem] opacity-30">
                   <Target size={48} className="mx-auto mb-4" />
-                  <p className="text-lg font-black uppercase tracking-widest">Целей пока нет</p>
-                  <p className="text-sm mt-2 opacity-60">Введите цель выше и нажмите «Поставить цель»</p>
+                  <p className="text-lg font-black uppercase tracking-widest">{t('goals.noGoals')}</p>
+                  <p className="text-sm mt-2 opacity-60">{t('goals.noGoalsDesc')}</p>
                 </div>
               ) : (
                 userGoals.map((goal, idx) => {
@@ -402,7 +405,7 @@ export default function Basecamp() {
                         />
                       </div>
                       <p className="text-[11px] font-bold opacity-30 mb-5">
-                        {goalCheckpoints.length} шагов · ещё {Math.max(0, 5 - goalCheckpoints.length)} до 100%
+                        {goalCheckpoints.length} {t('goals.steps')} · {t('goals.remaining', { count: Math.max(0, 5 - goalCheckpoints.length) })}
                       </p>
 
                       {/* Open Tracker Button */}
@@ -412,7 +415,7 @@ export default function Basecamp() {
                         style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                       >
                         <BarChart3 size={16} />
-                        Открыть трекер
+                        {t('goals.openTracker')}
                         <ChevronRight size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
                       </button>
                     </motion.div>

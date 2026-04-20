@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Search, Users, MapPin, MessageCircle, UserPlus, UserMinus, Sparkles, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ui/Toast';
+import { useTranslation } from 'react-i18next';
+import { useDebounce } from '../hooks/useDebounce';
 
 /*
 - [x] Update `Profile.jsx` to generate deterministic private room IDs
@@ -20,22 +22,24 @@ export default function People() {
   const [filterBy, setFilterBy] = useState('all'); // 'all' or 'following'
   const navigate = useNavigate();
   const { show } = useToast();
+  const { t } = useTranslation();
+  const debouncedSearch = useDebounce(search, 500);
 
-  useEffect(() => { fetchPeople(); }, []);
+  useEffect(() => { 
+    fetchPeople(debouncedSearch); 
+  }, [debouncedSearch]);
 
   const handleSearch = (e) => {
-    const val = e.target.value;
-    setSearch(val);
-    fetchPeople(val);
+    setSearch(e.target.value);
   };
 
   const handleFollow = async (personId) => {
     if (following.includes(personId)) {
       await unfollowUser(personId);
-      show('Вы отписались', 'info');
+      show(t('profile.unfollowed'), 'info');
     } else {
       await followUser(personId);
-      show('Вы подписались!', 'success');
+      show(t('profile.followed'), 'success');
     }
   };
 
@@ -73,8 +77,8 @@ export default function People() {
             <Users size={28} />
           </div>
           <div>
-            <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Люди</h1>
-            <p className="text-[12px] font-black uppercase tracking-widest opacity-40 mt-0.5">Участники сообщества</p>
+            <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{t('people.title')}</h1>
+            <p className="text-[12px] font-black uppercase tracking-widest opacity-40 mt-0.5">{t('people.subtitle')}</p>
           </div>
         </div>
 
@@ -86,7 +90,7 @@ export default function People() {
               type="text"
               value={search}
               onChange={handleSearch}
-              placeholder="Найти по имени..."
+              placeholder={t('people.searchPlaceholder')}
               className="input-base pl-14 h-14 text-base shadow-lg w-full"
             />
           </div>
@@ -98,7 +102,7 @@ export default function People() {
                 sortBy === 'name' ? 'bg-blue-500 border-blue-500 text-white shadow-lg' : 'bg-muted-foreground/5 border-transparent opacity-60'
               }`}
             >
-              {sortBy === 'name' ? 'По имени А-Я' : 'Сортировка'}
+              {sortBy === 'name' ? t('people.sortName') : t('people.sortNewest')}
             </button>
             <button
               onClick={() => setFilterBy(filterBy === 'following' ? 'all' : 'following')}
@@ -106,7 +110,7 @@ export default function People() {
                 filterBy === 'following' ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg' : 'bg-muted-foreground/5 border-transparent opacity-60'
               }`}
             >
-              {filterBy === 'following' ? 'Подписки' : 'Все'}
+              {filterBy === 'following' ? t('people.filterFollowing') : t('people.filterAll')}
             </button>
           </div>
         </div>
@@ -120,7 +124,7 @@ export default function People() {
       ) : displayPeople.length === 0 ? (
         <div className="text-center py-20 border-2 border-dashed rounded-[2.5rem] opacity-30" style={{ borderColor: 'var(--border)' }}>
           <Sparkles size={48} className="mx-auto mb-4" />
-          <p className="text-lg font-black uppercase tracking-widest">Никого не нашли</p>
+          <p className="text-lg font-black uppercase tracking-widest">{t('people.noneFound')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -166,7 +170,7 @@ export default function People() {
                         navigate(`/app/chats/private_${ids[0]}_${ids[1]}`);
                       }}
                       className="w-10 h-10 rounded-xl flex items-center justify-center transition-all bg-muted-foreground/5 hover:bg-blue-500/10 hover:text-blue-600"
-                      title="Написать"
+                      title={t('common.write')}
                     >
                       <MessageCircle size={18} />
                     </button>
@@ -177,7 +181,7 @@ export default function People() {
                           ? 'bg-muted-foreground/10 hover:bg-red-500/10 hover:text-red-500'
                           : 'bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white'
                       }`}
-                      title={isFollowing ? 'Отписаться' : 'Подписаться'}
+                      title={isFollowing ? t('people.unfollow') : t('people.follow')}
                     >
                       {isFollowing ? <UserMinus size={18} /> : <UserPlus size={18} />}
                     </button>
@@ -213,7 +217,7 @@ export default function People() {
                   className="w-full py-3 rounded-xl text-[13px] font-bold transition-all border opacity-0 group-hover:opacity-100 relative z-10"
                   style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
                 >
-                  Открыть профиль →
+                  {t('common.viewProfile')} →
                 </button>
               </motion.div>
             );

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useAppStore } from '../store/store';
 import { useNavigate } from 'react-router-dom';
+import { useAppStore } from '../store/store';
 import { motion } from 'framer-motion';
-import { Send, Target, ChevronLeft, Loader2, Sparkles } from 'lucide-react';
+import { Send, Target, ChevronLeft, Loader2, Sparkles, Trash2 } from 'lucide-react';
 import { useToast } from '../components/ui/Toast';
+import { useTranslation } from 'react-i18next';
 
 export default function CreatePostPage() {
   const { user, userGoals, fetchUserGoalsAndCheckpoints, addCheckpoint } = useAppStore();
@@ -12,6 +13,7 @@ export default function CreatePostPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { show } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (user) fetchUserGoalsAndCheckpoints(user.id);
@@ -25,10 +27,10 @@ export default function CreatePostPage() {
     const success = await addCheckpoint(selectedGoal, content.trim());
     
     if (success) {
-      show('Шаг успешно добавлен!', 'success');
+      show(t('common.success'), 'success');
       navigate('/app/feed');
     } else {
-      show('Ошибка при создании записи', 'error');
+      show(t('common.error'), 'error');
       setIsSubmitting(false);
     }
   };
@@ -39,7 +41,7 @@ export default function CreatePostPage() {
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-[12px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity mb-8"
       >
-        <ChevronLeft size={16} /> Назад
+        <ChevronLeft size={16} /> {t('common.back')}
       </button>
 
       <div className="flex items-center gap-4 mb-10">
@@ -48,8 +50,8 @@ export default function CreatePostPage() {
           <Sparkles size={28} />
         </div>
         <div>
-          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Новый шаг</h1>
-          <p className="text-[12px] font-black uppercase tracking-widest opacity-40 mt-0.5">Поделитесь своим прогрессом</p>
+          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{t('feed.createPost')}</h1>
+          <p className="text-[12px] font-black uppercase tracking-widest opacity-40 mt-0.5">{t('feed.whatHappened')}</p>
         </div>
       </div>
 
@@ -60,12 +62,12 @@ export default function CreatePostPage() {
       >
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 block">Выберите цель</label>
+            <label className="text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 block">{t('feed.selectGoal')}</label>
             <div className="grid grid-cols-1 gap-3">
               {userGoals.length === 0 ? (
                 <div className="p-4 rounded-2xl border-2 border-dashed flex flex-col items-center gap-2 text-center" style={{ borderColor: 'var(--border)' }}>
                   <Target size={24} className="opacity-20" />
-                  <p className="text-[13px] font-medium opacity-40">У вас пока нет активных целей</p>
+                  <p className="text-[13px] font-medium opacity-40">{t('profile.noSteps')}</p>
                   <button 
                     type="button"
                     onClick={() => navigate('/app/goals')}
@@ -96,11 +98,11 @@ export default function CreatePostPage() {
           </div>
 
           <div>
-            <label className="text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 block">Ваш прогресс</label>
+            <label className="text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 block">{t('profile.pulse')}</label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Что вы сделали сегодня для достижения своей цели?"
+              placeholder={t('feed.whatHappened')}
               className="w-full h-40 p-5 rounded-2xl border-2 outline-none transition-all text-[15px] font-medium leading-relaxed resize-none focus:border-blue-500/40"
               style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             />
@@ -116,7 +118,7 @@ export default function CreatePostPage() {
             ) : (
               <>
                 <Send size={20} />
-                Опубликовать
+                {t('common.publish')}
               </>
             )}
           </button>

@@ -1,27 +1,20 @@
 import { useState } from 'react';
-import { HelpCircle, Book, MessageSquare, Shield, ChevronRight, Search, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { HelpCircle, Search, Book, ChevronRight, MessageSquare, Sparkles, Shield } from 'lucide-react';
 import { useToast } from '../components/ui/Toast';
-
-const FAQ = [
-  { 
-    q: 'Что такое Nexus?', 
-    a: 'Nexus — это экосистема для созидателей. Мы верим в действия, а не в слова. Здесь вы ставите цели в одноименном разделе, находите партнеров через Поиск и делитесь реальными шагами в ленте Pulse.' 
-  },
-  { 
-    q: 'Как работает Поиск?', 
-    a: 'Раздел Поиска сканирует сообщество на предмет нужных вам навыков. Если вам нужен кодер или дизайнер, просто введите запрос, и система покажет тех, кто готов к коллаборации.' 
-  },
-  { 
-    q: 'Зачем мне раздел Цели?', 
-    a: 'Это ваш личный трекер. Здесь вы фиксируете, к чему стремитесь, и разбиваете большие задачи на малые этапы, чтобы не терять фокус.' 
-  }
-];
+import { useTranslation } from 'react-i18next';
 
 export default function Support() {
   const [search, setSearch] = useState('');
   const [openIndex, setOpenIndex] = useState(null);
   const { show } = useToast();
+  const { t } = useTranslation();
+
+  const FAQ = [
+    { q: t('support.faq.q1'), a: t('support.faq.a1') },
+    { q: t('support.faq.q2'), a: t('support.faq.a2') },
+    { q: t('support.faq.q3'), a: t('support.faq.a3') }
+  ];
 
   const filteredFaq = FAQ.filter(item => 
     item.q.toLowerCase().includes(search.toLowerCase()) || 
@@ -45,9 +38,9 @@ export default function Support() {
             />
           </div>
           <div>
-            <h1 className="text-5xl font-black tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>Help Center</h1>
+            <h1 className="text-5xl font-black tracking-tight mb-2" style={{ color: 'var(--text-primary)' }}>{t('support.title')}</h1>
             <p className="text-lg font-medium opacity-60 max-w-lg">
-              Мы здесь, чтобы помочь вам построить будущее. Ищите ответы или свяжитесь с нами напрямую.
+              {t('support.subtitle')}
             </p>
           </div>
         </motion.div>
@@ -57,7 +50,7 @@ export default function Support() {
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-blue-600 group-focus-within:scale-110 transition-transform" size={24} />
           <input 
             type="text" 
-            placeholder="Как мне запитчить проект? Как найти ментора?..."
+            placeholder={t('support.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="input-base pl-16 h-20 text-lg shadow-2xl"
@@ -69,7 +62,7 @@ export default function Support() {
         {/* FAQ Section */}
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
-            <Book className="text-emerald-600" /> База знаний
+            <Book className="text-emerald-600" /> {t('support.knowledgeBase')}
           </h2>
           
           {filteredFaq.map((item, idx) => (
@@ -101,7 +94,7 @@ export default function Support() {
           {filteredFaq.length === 0 && (
             <div className="text-center py-12 opacity-30">
               <Search size={48} className="mx-auto mb-4" />
-              <p className="text-lg font-black uppercase tracking-widest">Ничего не найдено</p>
+              <p className="text-lg font-black uppercase tracking-widest">{t('support.nothingFound')}</p>
             </div>
           )}
         </div>
@@ -109,33 +102,27 @@ export default function Support() {
         {/* Contact Sidebar */}
         <div className="space-y-6">
           <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
-            <MessageSquare className="text-blue-600" /> Контакты
+            <MessageSquare className="text-blue-600" /> {t('support.contacts')}
           </h2>
 
           <div className="card p-6 border-none shadow-xl bg-gradient-to-br from-pink-500/5 to-transparent">
             <Sparkles size={24} className="text-blue-600 mb-4" />
-            <h3 className="font-bold text-lg mb-2">Прямая связь</h3>
+            <h3 className="font-bold text-lg mb-2">{t('support.directLink')}</h3>
             <p className="text-sm opacity-60 mb-6 leading-relaxed">
-              Есть идея по улучшению Nexus или возникла проблема? Напишите нашему основателю напрямую.
+              {t('support.directLinkDesc')}
             </p>
             <button 
               onClick={() => window.open('https://t.me/nexus_support_mock', '_blank')}
               className="btn-pulse w-full py-4 text-[14px]"
             >
-              Написать в Telegram
+              {t('support.writeTelegram')}
             </button>
           </div>
 
           <div className="card p-6 border-none shadow-xl">
             <Shield size={24} className="text-emerald-600 mb-4" />
-            <h3 className="font-bold text-lg mb-2">Безопасность</h3>
-            <p className="text-sm opacity-60 mb-4 leading-relaxed">Хотите сообщить о нарушениях или неприемлемом поведении? Напишите нам.</p>
-            <button 
-              onClick={() => show('Функция загружается...', 'info')}
-              className="text-[14px] font-black uppercase tracking-widest text-emerald-600 hover:underline text-left w-full"
-            >
-              Политика сообщества
-            </button>
+            <h3 className="font-bold text-lg mb-2">{t('support.safety')}</h3>
+            <p className="text-sm opacity-60 mb-4 leading-relaxed">{t('support.safetyDesc')}</p>
           </div>
         </div>
       </div>

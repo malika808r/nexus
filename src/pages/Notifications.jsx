@@ -1,18 +1,20 @@
 import { useEffect } from 'react';
 import { useAppStore } from '../store/store';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, UserPlus, Zap, Bell, Check, Trash2 } from 'lucide-react';
+import { Heart, UserPlus, Zap, Bell, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const NOTIFICATION_ICONS = {
-  like: { icon: Heart, color: '#ef4444', bg: 'bg-red-500/10', text: 'оценил(а) ваш шаг' },
-  follow: { icon: UserPlus, color: '#3b82f6', bg: 'bg-blue-500/10', text: 'подписался(ась) на вас' },
-  comment: { icon: Zap, color: '#f59e0b', bg: 'bg-amber-500/10', text: 'оставил(а) комментарий' },
-  message: { icon: Bell, color: '#10b981', bg: 'bg-emerald-500/10', text: 'отправил(а) вам сообщение' },
+  like: { icon: Heart, color: '#ef4444', bg: 'bg-red-500/10', key: 'notifications.like' },
+  follow: { icon: UserPlus, color: '#3b82f6', bg: 'bg-blue-500/10', key: 'notifications.follow' },
+  comment: { icon: Zap, color: '#f59e0b', bg: 'bg-amber-500/10', key: 'notifications.comment' },
+  message: { icon: Bell, color: '#10b981', bg: 'bg-emerald-500/10', key: 'notifications.message' },
 };
 
 export default function Notifications() {
   const { notifications, fetchNotifications, markNotificationRead, markAllNotificationsRead } = useAppStore();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     fetchNotifications();
@@ -26,8 +28,8 @@ export default function Notifications() {
     <div className="max-w-2xl mx-auto px-4 pt-8 md:pt-16 pb-32">
       <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Уведомления</h1>
-          <p className="text-sm font-medium opacity-50">Ваша социальная активность</p>
+          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{t('notifications.title')}</h1>
+          <p className="text-sm font-medium opacity-50">{t('notifications.subtitle')}</p>
         </div>
         
         {notifications.some(n => !n.read) && (
@@ -36,7 +38,7 @@ export default function Notifications() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-black uppercase tracking-widest bg-muted-foreground/5 hover:bg-muted-foreground/10 transition-all"
             style={{ color: 'var(--text-primary)' }}
           >
-            <Check size={14} /> Прочитать все
+            <Check size={14} /> {t('notifications.markAll')}
           </button>
         )}
       </div>
@@ -45,7 +47,7 @@ export default function Notifications() {
         <AnimatePresence mode="popLayout">
           {notifications.length > 0 ? (
             notifications.map((n, idx) => {
-              const config = NOTIFICATION_ICONS[n.type] || { icon: Bell, color: 'gray', bg: 'bg-gray-500/10', text: 'совершил(а) действие' };
+              const config = NOTIFICATION_ICONS[n.type] || { icon: Bell, color: 'gray', bg: 'bg-gray-500/10', key: 'notifications.action' };
               const Icon = config.icon;
 
               return (
@@ -73,10 +75,10 @@ export default function Notifications() {
                       </div>
                     </div>
                     <p className="text-[13px] font-medium text-secondary truncate">
-                      {config.text}
+                      {t(config.key)}
                     </p>
                     <span className="text-[10px] font-bold uppercase tracking-widest opacity-30 mt-1 block">
-                      {new Date(n.created_at).toLocaleDateString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(n.created_at).toLocaleDateString(i18n.language, { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
 
@@ -101,8 +103,8 @@ export default function Notifications() {
                 <Bell size={32} className="opacity-20" />
               </div>
               <div>
-                <p className="text-lg font-black opacity-30 uppercase tracking-tighter">Тишина</p>
-                <p className="text-sm font-medium opacity-20">Уведомления появятся здесь</p>
+                <p className="text-lg font-black opacity-30 uppercase tracking-tighter">{t('notifications.emptyTitle')}</p>
+                <p className="text-sm font-medium opacity-20">{t('notifications.emptySubtitle')}</p>
               </div>
             </motion.div>
           )}

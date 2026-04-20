@@ -1,22 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAppStore } from '../store/store';
-import { Heart, MessageCircle, Zap, Sparkles, Send, ChevronDown, ChevronUp, Loader2, Edit3 } from 'lucide-react';
+import { Heart, MessageCircle, Zap, Sparkles, Send, ChevronDown, ChevronUp, Loader2, Edit3, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../components/ui/Toast';
 import { useInView } from 'react-intersection-observer';
 import PostSkeleton from '../components/ui/PostSkeleton';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // ─── Reaction Bar ───────────────────────────────────────────────────
 const REACTIONS = [
-  { type: 'zap', emoji: '⚡️', label: 'Зарядить' },
-  { type: 'fire', emoji: '🔥', label: 'Огонь' },
-  { type: 'heart', emoji: '❤️', label: 'Класс' },
-  { type: 'clap', emoji: '👏', label: 'Браво' },
+  { type: 'zap', emoji: '⚡️', key: 'feed.reactions.zap' },
+  { type: 'fire', emoji: '🔥', key: 'feed.reactions.fire' },
+  { type: 'heart', emoji: '❤️', key: 'feed.reactions.heart' },
+  { type: 'clap', emoji: '👏', key: 'feed.reactions.clap' },
 ];
 
 function ReactionBar({ post, user, onReact }) {
   const [showPicker, setShowPicker] = useState(false);
+  const { t } = useTranslation();
   const myReaction = post.reactions?.find(r => r.user_id === user?.id);
 
   // Group reactions by type
@@ -44,7 +46,7 @@ function ReactionBar({ post, user, onReact }) {
         style={{ color: myReaction ? 'var(--color-brand-primary)' : 'var(--text-muted)' }}
       >
         {myReaction ? REACTIONS.find(r => r.type === myReaction.type)?.emoji : '＋'}
-        <span className="hidden sm:inline">{myReaction ? REACTIONS.find(r => r.type === myReaction.type)?.label : 'Реакция'}</span>
+        <span className="hidden sm:inline">{myReaction ? t(REACTIONS.find(r => r.type === myReaction.type)?.key) : t('feed.reactions.reaction')}</span>
       </button>
 
       {/* Picker popup */}
@@ -61,7 +63,7 @@ function ReactionBar({ post, user, onReact }) {
               <button key={r.type}
                 onClick={() => { onReact(post.id, r.type, post.goals?.user_id); setShowPicker(false); }}
                 className="text-2xl w-10 h-10 flex items-center justify-center rounded-xl hover:bg-muted-foreground/10 transition-all hover:scale-110 active:scale-95"
-                title={r.label}
+                title={t(r.key)}
               >
                 {r.emoji}
               </button>
@@ -79,6 +81,7 @@ function CommentsSection({ postId, authorId }) {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const { t, i18n } = useTranslation();
   const inputRef = useRef(null);
 
   const postComments = comments[postId] || [];
@@ -102,7 +105,7 @@ function CommentsSection({ postId, authorId }) {
   return (
     <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
       {/* Comments list */}
-      {postComments.length > 0 && (
+      {postComments.length > 0 ? (
         <div className="space-y-3 mb-4">
           {postComments.map(c => (
             <motion.div
@@ -123,13 +126,18 @@ function CommentsSection({ postId, authorId }) {
                     {c.profiles?.first_name} {c.profiles?.last_name || ''}
                   </span>
                   <span className="text-[11px] opacity-30 font-bold">
-                    {new Date(c.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {new Date(c.created_at).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
                 <p className="text-[14px] font-medium mt-0.5 leading-snug" style={{ color: 'var(--text-primary)' }}>{c.text}</p>
               </div>
             </motion.div>
           ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-2 py-8 opacity-20">
+          <MessageCircle size={32} />
+          <p className="text-[10px] font-black uppercase tracking-widest">{t('feed.noComments')}</p>
         </div>
       )}
 
@@ -148,8 +156,8 @@ function CommentsSection({ postId, authorId }) {
             type="text"
             value={text}
             onChange={e => setText(e.target.value)}
-            placeholder="Написать комментарий..."
-            className="flex-1 bg-transparent text-[14px] font-medium outline-none"
+            placeholder={t('feed.writeComment')}
+            className="input-base text-sm h-11 pr-12 focus:ring-1 focus:ring-blue-500/20"
             style={{ color: 'var(--text-primary)' }}
           />
           <button type="submit" disabled={sending || !text.trim()}
@@ -165,6 +173,7 @@ function CommentsSection({ postId, authorId }) {
 // ─── Post Card ──────────────────────────────────────────────────────
 function PostCard({ post, user, onReact, navigate }) {
   const [showComments, setShowComments] = useState(false);
+  const { t, i18n } = useTranslation();
   const commentCount = (useAppStore.getState().comments[post.id] || []).length;
   const reactionCount = post.reactions?.length || 0;
   const authorId = post.goals?.user_id || post.profiles?.id;
@@ -194,7 +203,7 @@ function PostCard({ post, user, onReact, navigate }) {
               {post.profiles?.first_name} {post.profiles?.last_name || ''}
             </p>
             <p className="text-[11px] font-bold uppercase tracking-widest opacity-40">
-              {new Date(post.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
+              {new Date(post.created_at).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' })}
               {post.goals?.title && <span> · {post.goals.title}</span>}
             </p>
           </div>
@@ -203,7 +212,7 @@ function PostCard({ post, user, onReact, navigate }) {
         {/* Goal badge */}
         {post.goals?.title && (
           <span className="hidden sm:inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-black text-emerald-600 bg-emerald-500/10 border border-emerald-500/20">
-            🎯 Цель
+            🎯 {t('feed.goalBadge')}
           </span>
         )}
       </div>
@@ -212,8 +221,6 @@ function PostCard({ post, user, onReact, navigate }) {
       <p className="text-[16px] leading-relaxed font-medium mb-4" style={{ color: 'var(--text-primary)' }}>
         {post.content}
       </p>
-
-
 
       {/* Actions bar */}
       <div className="flex items-center gap-4 pt-3 border-t flex-wrap" style={{ borderColor: 'var(--border)' }}>
@@ -226,8 +233,8 @@ function PostCard({ post, user, onReact, navigate }) {
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] font-bold transition-all hover:bg-muted-foreground/10"
           style={{ color: showComments ? 'var(--color-brand-primary)' : 'var(--text-muted)' }}
         >
-          <MessageCircle size={18} />
-          <span>{reactionCount + commentCount > 0 ? reactionCount + commentCount : ''} Комментарий</span>
+          <MessageCircle size={18} className="opacity-40" />
+          <span className="text-[12px] font-black uppercase tracking-widest opacity-40">{t('feed.comments')}</span>
           {showComments ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </button>
 
@@ -235,10 +242,9 @@ function PostCard({ post, user, onReact, navigate }) {
         {authorId === user?.id && (
           <button
             onClick={() => navigate(`/app/feed/${post.id}/edit`)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] font-bold transition-all hover:bg-blue-500/10 text-blue-600 ml-auto"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-[12px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-600/10 transition-colors ml-auto"
           >
-            <Edit3 size={16} />
-            <span>Редактировать</span>
+            <Edit3 size={14} /> {t('common.edit')}
           </button>
         )}
       </div>
@@ -264,6 +270,7 @@ function PostCard({ post, user, onReact, navigate }) {
 export default function Feed() {
   const { feed, fetchFeed, user, feedLoading, hasMoreFeed, sendReaction } = useAppStore();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { ref, inView } = useInView({ threshold: 0, rootMargin: '300px' });
 
   useEffect(() => { fetchFeed(true); }, []);
@@ -287,8 +294,8 @@ export default function Feed() {
             <Zap size={24} fill="currentColor" />
           </div>
           <div>
-            <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Лента</h1>
-            <p className="text-[12px] font-black uppercase tracking-widest opacity-40">Шаги сообщества к целям</p>
+            <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{t('nav.feed')}</h1>
+            <p className="text-[12px] font-black uppercase tracking-widest opacity-40">{t('feed.communitySteps')}</p>
           </div>
         </div>
 
@@ -305,7 +312,7 @@ export default function Feed() {
               : (user?.user_metadata?.firstName || 'B').charAt(0)}
           </div>
           <span className="text-[14px] font-medium opacity-40 group-hover:opacity-70 transition-opacity" style={{ color: 'var(--text-primary)' }}>
-            Поделитесь своим сегодняшним шагом...
+            {t('feed.sharePrompt')}
           </span>
         </button>
       </header>
@@ -319,14 +326,16 @@ export default function Feed() {
         ) : !feed || (feed.length === 0 && !feedLoading) ? (
           <div className="text-center py-24 border-2 border-dashed rounded-[2.5rem]"
                style={{ borderColor: 'var(--border)' }}>
-            <Sparkles size={48} className="mx-auto mb-4" style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
-            <p className="text-lg font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Пока пусто</p>
-            <p className="text-sm font-medium mt-2 opacity-40 px-8">Будьте первым! Поделитесь своим шагом к цели.</p>
+            <div className="flex flex-col items-center">
+              <Sparkles size={48} className="mb-4 opacity-10" />
+              <p className="text-lg font-black uppercase tracking-widest opacity-20">{t('feed.noPosts')}</p>
+            </div>
             <button
               onClick={() => window.dispatchEvent(new Event('open-create'))}
               className="mt-6 btn-pulse"
             >
-              Сделать шаг
+              <Plus size={20} className="relative z-10" />
+              <span className="font-bold relative z-10">{t('feed.newStep')}</span>
             </button>
           </div>
         ) : (
@@ -343,7 +352,7 @@ export default function Feed() {
                 <Loader2 className="animate-spin" style={{ color: 'var(--color-brand-primary)' }} />
               ) : (
                 <p className="text-center text-[11px] font-black uppercase tracking-[0.2em] opacity-20">
-                  Вы просмотрели всю ленту ✨
+                  {t('feed.allCaughtUp')}
                 </p>
               )}
             </div>

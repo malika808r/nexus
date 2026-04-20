@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { X, Sparkles, Code, Music, Trophy, MessageCircle, Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "../store/store";
 import { useToast } from "./ui/Toast";
+import { useTranslation } from "react-i18next";
+import { Sparkles, Code, Music, Trophy, MessageCircle, X, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ICONS = [
   { id: 'Sparkles', icon: Sparkles, label: 'Инсайт' },
@@ -22,6 +23,7 @@ const COLORS = [
 export default function CreateRoomModal({ isOpen, onClose }) {
   const { addRoom } = useAppStore();
   const { show } = useToast();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [selectedIcon, setSelectedIcon] = useState('MessageCircle');
@@ -40,10 +42,10 @@ export default function CreateRoomModal({ isOpen, onClose }) {
     try {
       const colorClass = COLORS.find(c => c.id === selectedColor)?.class || 'from-blue-500 to-indigo-600';
       addRoom(title.trim(), selectedIcon, colorClass);
-      show("Комната создана! 🎉", "success");
+      show(t('rooms.success'), "success");
       handleClose();
     } catch (err) {
-      show("Ошибка создания", "error");
+      show(t('common.error'), "error");
     } finally {
       setLoading(false);
     }
@@ -70,9 +72,9 @@ export default function CreateRoomModal({ isOpen, onClose }) {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h3 className="text-2xl font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
-                  Создать пространство
+                  {t('rooms.modalTitle')}
                 </h3>
-                <p className="text-sm font-medium opacity-40 mt-0.5">Выберите тему обсуждения</p>
+                <p className="text-sm font-medium opacity-40 mt-0.5">{t('rooms.modalSubtitle')}</p>
               </div>
               <button onClick={handleClose} className="p-2 rounded-xl hover:bg-muted-foreground/10 transition-colors" style={{ color: "var(--text-muted)" }}>
                 <X size={20} />
@@ -82,7 +84,7 @@ export default function CreateRoomModal({ isOpen, onClose }) {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Title */}
               <div>
-                <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 ml-1">Название комнаты</label>
+                <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 ml-1">{t('rooms.roomName')}</label>
                 <input
                   type="text"
                   placeholder="Напр: Совместный кодинг 💻"
@@ -95,7 +97,7 @@ export default function CreateRoomModal({ isOpen, onClose }) {
 
               {/* Icon selection */}
               <div>
-                <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 ml-1">Иконка</label>
+                <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 ml-1">{t('rooms.icon')}</label>
                 <div className="flex gap-2">
                   {ICONS.map(i => {
                     const IconComp = i.icon;
@@ -117,7 +119,7 @@ export default function CreateRoomModal({ isOpen, onClose }) {
 
               {/* Color selection */}
               <div>
-                <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 ml-1">Цветовая схема</label>
+                <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-3 ml-1">{t('rooms.color')}</label>
                 <div className="flex gap-3">
                   {COLORS.map(c => (
                     <button
@@ -135,11 +137,11 @@ export default function CreateRoomModal({ isOpen, onClose }) {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={!title.trim() || loading}
+                 disabled={!title.trim() || loading}
                 className="btn-pulse w-full h-14 flex items-center justify-center gap-2 mt-4 shadow-xl disabled:opacity-40"
               >
                 {loading && <Loader2 size={24} className="animate-spin" />}
-                {loading ? "Создание..." : "Создать комнату"}
+                {loading ? t('rooms.creating') : t('rooms.createRoom')}
               </button>
             </form>
           </motion.div>
