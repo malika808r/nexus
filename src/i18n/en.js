@@ -77,6 +77,7 @@ const en = {
     lastName: 'Last Name',
     dontHaveAccount: "Don't have an account?",
     create: 'Create',
+    createAcc: 'Create Account',
     alreadyHaveAccount: 'Already have an account?',
     loginButton: 'Login',
     registerButton: 'Start Journey',

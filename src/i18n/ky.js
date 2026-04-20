@@ -77,6 +77,7 @@ const ky = {
     lastName: 'Фамилия',
     dontHaveAccount: 'Аккаунтуңуз жокпу?',
     create: 'Түзүү',
+    createAcc: 'Аккаунт түзүү',
     alreadyHaveAccount: 'Аккаунтуңуз барбы?',
     loginButton: 'Кирүү',
     registerButton: 'Жолду баштоо',

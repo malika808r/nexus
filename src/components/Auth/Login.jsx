@@ -1,18 +1,20 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/store';
-import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from '../ui/Toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useTranslation } from 'react-i18next';
 
-const loginSchema = z.object({
-  email: z.string().email('Некорректный email адрес'),
-  password: z.string().min(6, 'Пароль должен быть не менее 6 символов'),
+const loginSchema = (t) => z.object({
+  email: z.string().email(t('auth.invalidEmail') || 'Invalid email address'),
+  password: z.string().min(6, t('auth.passwordTooShort') || 'Password must be at least 6 characters'),
 });
 
 export default function Login() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login, loading } = useAuthStore();
   const { show } = useToast();
@@ -23,7 +25,7 @@ export default function Login() {
     formState: { errors },
     getValues
   } = useForm({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema(t)),
   });
 
   const onSubmit = async (data) => {
@@ -31,24 +33,24 @@ export default function Login() {
     if (result.success) {
       navigate('/app');
     } else {
-      show(result.error || 'Неверный email или пароль', 'error');
+      show(result.error || t('auth.invalidCredentials'), 'error');
     }
   };
 
   const handleRecover = () => {
     const email = getValues('email');
     if (!email) {
-      show('Введите email для восстановления', 'error');
+      show(t('auth.enterEmailToRecover') || 'Enter email to recover', 'error');
       return;
     }
-    show('Инструкции отправлены на вашу почту', 'success');
+    show(t('auth.recoverySent') || 'Instructions sent to your email', 'success');
   };
 
   return (
     <div className="p-8 md:p-14">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-        <h1 className="text-4xl font-black tracking-tight mb-3" style={{ color: 'var(--text-primary)' }}>Добро пожаловать.</h1>
-        <p className="text-[15px] font-medium opacity-50 px-4" style={{ color: 'var(--text-primary)' }}>Введите свои данные для продолжения.</p>
+        <h1 className="text-4xl font-black tracking-tight mb-3" style={{ color: 'var(--text-primary)' }}>{t('auth.welcome')}</h1>
+        <p className="text-[15px] font-medium opacity-50 px-4" style={{ color: 'var(--text-primary)' }}>{t('auth.continue')}</p>
       </motion.div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -58,7 +60,7 @@ export default function Login() {
             <input
               {...register('email')}
               type="email"
-              placeholder="Email"
+              placeholder={t('auth.email')}
               className={`input-base !pl-12 ${errors.email ? 'border-red-500' : ''}`}
             />
           </div>
@@ -71,7 +73,7 @@ export default function Login() {
             <input
               {...register('password')}
               type="password"
-              placeholder="Пароль"
+              placeholder={t('auth.password')}
               className={`input-base !pl-12 ${errors.password ? 'border-red-500' : ''}`}
             />
           </div>
@@ -84,7 +86,7 @@ export default function Login() {
             onClick={handleRecover}
             className="text-[11px] font-black uppercase tracking-widest opacity-40 hover:opacity-100 transition-opacity"
           >
-            Восстановить доступ
+            {t('auth.recovery')}
           </button>
         </div>
 
@@ -98,11 +100,11 @@ export default function Login() {
             <div className="flex items-center gap-3">
                <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin" 
                     style={{ borderColor: 'var(--bg-base)', borderTopColor: 'transparent' }} />
-               <span className="text-[14px] uppercase tracking-widest font-black">Синхронизация...</span>
+               <span className="text-[14px] uppercase tracking-widest font-black">{t('auth.syncing')}</span>
             </div>
           ) : (
             <>
-              Войти
+              {t('auth.loginButton')}
               <div className="w-7 h-7 rounded-full flex items-center justify-center transition-transform group-hover:rotate-45"
                    style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)' }}>
                 <ArrowRight size={16} />
@@ -114,9 +116,9 @@ export default function Login() {
 
       <div className="mt-12 text-center">
          <p className="text-sm font-medium opacity-50" style={{ color: 'var(--text-primary)' }}>
-           Нет аккаунта?{' '}
+           {t('auth.dontHaveAccount')}{' '}
            <Link to="/auth/register" className="font-black text-blue-600 hover:underline">
-             Создать
+             {t('auth.create')}
            </Link>
          </p>
       </div>

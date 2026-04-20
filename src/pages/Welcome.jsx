@@ -7,6 +7,7 @@ import { useToast } from '../components/ui/Toast';
 import { Sparkles, Zap, Map, Target, ArrowRight, BookOpen, Layers, Users } from 'lucide-react';
 import logo from '../assets/logo.svg';
 import LanguageToggle from '../components/ui/LanguageToggle';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ export default function Welcome() {
           <span className="font-black text-xl tracking-tight" style={{ color: 'var(--text-primary)' }}>NEXUS</span>
         </div>
         <div className="flex items-center gap-4 md:gap-8">
+          <ThemeToggle />
           <LanguageToggle />
           <button onClick={() => navigate('/auth/login')} className="text-[14px] font-bold opacity-60 hover:opacity-100 transition-opacity hidden sm:block" style={{ color: 'var(--text-primary)' }}>{t('welcomeHero.loginLink')}</button>
           <button

@@ -77,6 +77,7 @@ const ru = {
     lastName: 'Фамилия',
     dontHaveAccount: 'Нет аккаунта?',
     create: 'Создать',
+    createAcc: 'Создать аккаунт',
     alreadyHaveAccount: 'Уже есть аккаунт?',
     loginButton: 'Войти',
     registerButton: 'Начать путь',

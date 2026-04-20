@@ -1,5 +1,7 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import ThemeToggle from '../ui/ThemeToggle';
+import LanguageToggle from '../ui/LanguageToggle';
 
 export default function AuthLayout() {
   const navigate = useNavigate();
@@ -21,14 +23,21 @@ export default function AuthLayout() {
         style={{ backgroundColor: '#047857' }}
       />
 
-      {/* Logo */}
-      <button onClick={() => navigate('/')} className="absolute top-6 left-6 flex items-center gap-2 z-50">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-lg shadow-xl"
-             style={{ backgroundColor: 'var(--text-primary)', color: 'var(--bg-base)' }}>
-          N
+      {/* Header with Nav elements */}
+      <div className="absolute top-6 left-6 right-6 flex items-center justify-between z-50">
+        <button onClick={() => navigate('/')} className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-lg shadow-xl"
+               style={{ backgroundColor: 'var(--text-primary)', color: 'var(--bg-base)' }}>
+            N
+          </div>
+          <span className="font-black text-lg tracking-tight" style={{ color: 'var(--text-primary)' }}>NEXUS</span>
+        </button>
+
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <LanguageToggle />
         </div>
-        <span className="font-black text-lg tracking-tight" style={{ color: 'var(--text-primary)' }}>NEXUS</span>
-      </button>
+      </div>
 
       {/* Card */}
       <motion.div

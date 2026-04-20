@@ -485,7 +485,7 @@ export const useAppStore = create((set, get) => ({
   // ==========================================
   // 4. НАСТРОЙКИ И ТЕМА
   // ==========================================
-  language: localStorage.getItem('app-language') || 'ru',
+  language: localStorage.getItem('app-language') || 'en',
   theme: localStorage.getItem('app-theme') || 'light',
 
   setLanguage: (lang) => { 

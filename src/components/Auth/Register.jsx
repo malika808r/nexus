@@ -6,15 +6,17 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useToast } from '../ui/Toast';
+import { useTranslation } from 'react-i18next';
 
-const registerSchema = z.object({
-  firstName: z.string().min(2, 'Имя должно быть не менее 2 символов'),
-  lastName: z.string().min(2, 'Фамилия должна быть не менее 2 символов'),
-  email: z.string().email('Некорректный email адрес'),
-  password: z.string().min(6, 'Пароль должен быть не менее 6 символов'),
+const registerSchema = (t) => z.object({
+  firstName: z.string().min(2, t('auth.firstNameTooShort') || 'Name must be at least 2 characters'),
+  lastName: z.string().min(2, t('auth.lastNameTooShort') || 'Surname must be at least 2 characters'),
+  email: z.string().email(t('auth.invalidEmail') || 'Invalid email address'),
+  password: z.string().min(6, t('auth.passwordTooShort') || 'Password must be at least 6 characters'),
 });
 
 export default function Register() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { register: signUp, loading } = useAuthStore();
   const { show } = useToast();
@@ -24,7 +26,7 @@ export default function Register() {
     handleSubmit,
     formState: { errors }
   } = useForm({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema(t)),
   });
 
   const onSubmit = async (data) => {
@@ -32,15 +34,15 @@ export default function Register() {
     if (result.success) {
       navigate('/app');
     } else {
-      show(result.error || 'Ошибка при регистрации', 'error');
+      show(result.error || t('auth.errorRegister') || 'Registration error', 'error');
     }
   };
 
   return (
     <div className="p-8 md:p-14">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-        <h1 className="text-4xl font-black tracking-tight mb-3" style={{ color: 'var(--text-primary)' }}>Добро пожаловать.</h1>
-        <p className="text-[15px] font-medium opacity-50 px-4" style={{ color: 'var(--text-primary)' }}>Создайте аккаунт для продолжения.</p>
+        <h1 className="text-4xl font-black tracking-tight mb-3" style={{ color: 'var(--text-primary)' }}>{t('auth.welcome')}</h1>
+        <p className="text-[15px] font-medium opacity-50 px-4" style={{ color: 'var(--text-primary)' }}>{t('auth.createAcc') || t('welcomeHero.createAcc')}</p>
       </motion.div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -51,7 +53,7 @@ export default function Register() {
               <input
                 {...register('firstName')}
                 type="text"
-                placeholder="Имя"
+                placeholder={t('auth.firstName')}
                 className={`input-base !pl-12 ${errors.firstName ? 'border-red-500' : ''}`}
               />
             </div>
@@ -63,7 +65,7 @@ export default function Register() {
               <input
                 {...register('lastName')}
                 type="text"
-                placeholder="Фамилия"
+                placeholder={t('auth.lastName')}
                 className={`input-base !pl-12 ${errors.lastName ? 'border-red-500' : ''}`}
               />
             </div>
@@ -77,7 +79,7 @@ export default function Register() {
             <input
               {...register('email')}
               type="email"
-              placeholder="Email"
+              placeholder={t('auth.email')}
               className={`input-base !pl-12 ${errors.email ? 'border-red-500' : ''}`}
             />
           </div>
@@ -90,7 +92,7 @@ export default function Register() {
             <input
               {...register('password')}
               type="password"
-              placeholder="Пароль"
+              placeholder={t('auth.password')}
               className={`input-base !pl-12 ${errors.password ? 'border-red-500' : ''}`}
             />
           </div>
@@ -107,11 +109,11 @@ export default function Register() {
             <div className="flex items-center gap-3">
                <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin" 
                     style={{ borderColor: 'var(--bg-base)', borderTopColor: 'transparent' }} />
-               <span className="text-[14px] uppercase tracking-widest font-black">Синхронизация...</span>
+               <span className="text-[14px] uppercase tracking-widest font-black">{t('auth.syncing')}</span>
             </div>
           ) : (
             <>
-              Начать путь
+              {t('auth.registerButton')}
               <div className="w-7 h-7 rounded-full flex items-center justify-center transition-transform group-hover:rotate-45"
                    style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)' }}>
                 <ArrowRight size={16} />
@@ -122,9 +124,9 @@ export default function Register() {
       </form>
 
       <p className="text-center text-sm mt-10 font-medium opacity-50" style={{ color: 'var(--text-primary)' }}>
-        Уже есть аккаунт?{' '}
+        {t('auth.alreadyHaveAccount')}{' '}
         <Link to="/auth/login" className="font-black text-blue-600 hover:underline">
-          Войти
+          {t('auth.login')}
         </Link>
       </p>
     </div>

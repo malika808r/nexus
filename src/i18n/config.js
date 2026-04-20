@@ -6,7 +6,7 @@ import ru from './ru.js';
 import en from './en.js';
 import ky from './ky.js';
 
-const savedLanguage = localStorage.getItem('app-language') || 'ru';
+const savedLanguage = localStorage.getItem('app-language') || 'en';
 
 i18n
   .use(initReactI18next)
@@ -17,7 +17,7 @@ i18n
       ky: { translation: ky }
     },
     lng: savedLanguage, // Язык берется из сохраненного
-    fallbackLng: "ru",
+    fallbackLng: "en",
     interpolation: {
       escapeValue: false 
     }
