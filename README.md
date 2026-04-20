@@ -61,8 +61,8 @@
 
 ### 1. Клонирование репозитория
 ```bash
-git clone https://github.com/malika808r/kyzjolu__web.git
-cd kyzjolu__web
+git clone https://github.com/malika808r/nexus.git
+cd nexus
 ```
 
 ### 2. Установка зависимостей

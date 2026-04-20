@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/store";
 import InteractiveGuide from "./ui/InteractiveGuide";
 import CreateModal from "./CreateModal";
+import LanguageToggle from "./ui/LanguageToggle";
 import logo from "../assets/logo.svg";
 import { Shield } from 'lucide-react';
 
@@ -160,7 +161,10 @@ function SideNav({ onCreateOpen }) {
           </Link>
 
           <div className="flex items-center justify-between px-2">
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <LanguageToggle />
+            </div>
             <button
               onClick={() => window.dispatchEvent(new Event('open-guide'))}
               className="flex items-center gap-2 text-[12px] font-black uppercase tracking-widest px-3 py-2 rounded-xl bg-muted-foreground/5 hover:bg-muted-foreground/10 transition-all font-outfit"

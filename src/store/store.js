@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../supabase';
+import i18n from '../i18n/config';
 
 export const useAppStore = create((set, get) => ({
   // ==========================================
@@ -480,12 +481,57 @@ export const useAppStore = create((set, get) => ({
   language: localStorage.getItem('app-language') || 'ru',
   theme: localStorage.getItem('app-theme') || 'light',
 
-  setLanguage: (lang) => { localStorage.setItem('app-language', lang); set({ language: lang }); },
+  setLanguage: (lang) => { 
+    localStorage.setItem('app-language', lang); 
+    i18n.changeLanguage(lang);
+    set({ language: lang }); 
+  },
 
   setTheme: (theme) => {
     localStorage.setItem('app-theme', theme);
     document.documentElement.classList.toggle('dark', theme === 'dark');
     set({ theme });
+  },
+
+  // ── КОМНАТЫ СООБЩЕСТВА (COMMUNITY ROOMS) ──
+  rooms: [
+    { id: 'general', title: 'Общий чат 👋', icon: 'Sparkles', color: 'from-blue-500 to-indigo-500', count: 124 },
+    { id: 'it', title: 'Идеи и Проекты 💡', icon: 'Code', color: 'from-emerald-500 to-teal-500', count: 42 },
+    { id: 'aesthetic', title: 'Вдохновение ✨', icon: 'Music', color: 'from-pink-500 to-rose-500', count: 88 },
+    { id: 'sport', title: 'Личные цели 🎯', icon: 'Trophy', color: 'from-orange-500 to-red-500', count: 56 },
+  ],
+
+  fetchRooms: () => {
+    const saved = localStorage.getItem('nexus-custom-rooms');
+    if (saved) {
+      const custom = JSON.parse(saved);
+      const defaults = [
+        { id: 'general', title: 'Общий чат 👋', icon: 'Sparkles', color: 'from-blue-500 to-indigo-500', count: 124 },
+        { id: 'it', title: 'Идеи и Проекты 💡', icon: 'Code', color: 'from-emerald-500 to-teal-500', count: 42 },
+        { id: 'aesthetic', title: 'Вдохновение ✨', icon: 'Music', color: 'from-pink-500 to-rose-500', count: 88 },
+        { id: 'sport', title: 'Личные цели 🎯', icon: 'Trophy', color: 'from-orange-500 to-red-500', count: 56 },
+      ];
+      set({ rooms: [...defaults, ...custom] });
+    }
+  },
+
+  addRoom: (title, icon, color) => {
+    const newRoom = {
+      id: `custom_${Date.now()}`,
+      title,
+      icon,
+      color,
+      count: 0
+    };
+    
+    set(state => {
+      const updated = [...state.rooms, newRoom];
+      const customOnly = updated.filter(r => r.id.startsWith('custom_'));
+      localStorage.setItem('nexus-custom-rooms', JSON.stringify(customOnly));
+      return { rooms: updated };
+    });
+    
+    return newRoom;
   },
 
   initTheme: () => {

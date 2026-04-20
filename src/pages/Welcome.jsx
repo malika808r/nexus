@@ -6,6 +6,7 @@ import { useAppStore } from '../store/store';
 import { useToast } from '../components/ui/Toast';
 import { Sparkles, Zap, Map, Target, ArrowRight, BookOpen, Layers, Users } from 'lucide-react';
 import logo from '../assets/logo.svg';
+import LanguageToggle from '../components/ui/LanguageToggle';
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ export default function Welcome() {
           <span className="font-black text-xl tracking-tight" style={{ color: 'var(--text-primary)' }}>NEXUS</span>
         </div>
         <div className="flex items-center gap-8">
+          <LanguageToggle />
           <button onClick={() => navigate('/auth/login')} className="text-[14px] font-bold opacity-60 hover:opacity-100 transition-opacity" style={{ color: 'var(--text-primary)' }}>{t('welcomeHero.loginLink')}</button>
           <button
             onClick={() => navigate('/auth/register')}
