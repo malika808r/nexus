@@ -123,7 +123,7 @@ export default function Register() {
 
       <p className="text-center text-sm mt-10 font-medium opacity-50" style={{ color: 'var(--text-primary)' }}>
         Уже есть аккаунт?{' '}
-        <Link to="/auth/login" className="font-black text-pink-500 hover:underline">
+        <Link to="/auth/login" className="font-black text-blue-600 hover:underline">
           Войти
         </Link>
       </p>

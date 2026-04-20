@@ -33,8 +33,8 @@ export const useToast = () => useContext(ToastContext);
 
 function Toast({ message, type, onClose }) {
   const icons = {
-    success: <CheckCircle className="text-lime-500" size={18} />,
-    error: <AlertCircle className="text-pink-500" size={18} />,
+    success: <CheckCircle className="text-emerald-600" size={18} />,
+    error: <AlertCircle className="text-blue-600" size={18} />,
     info: <Info className="text-blue-500" size={18} />,
   };
 

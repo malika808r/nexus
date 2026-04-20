@@ -14,7 +14,6 @@ export const useAppStore = create((set, get) => ({
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         set({ user: session.user, isInitializing: false });
-        // Initial fetch for social data
         get().fetchFollowing(session.user.id);
         get().fetchNotifications();
       } else {
@@ -33,12 +32,7 @@ export const useAppStore = create((set, get) => ({
         set({ user: demoUserData, loading: false });
         return { success: true, user: demoUserData };
       }
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       set({ user: data.user, loading: false });
       get().fetchFollowing(data.user.id);
@@ -54,13 +48,9 @@ export const useAppStore = create((set, get) => ({
     set({ loading: true });
     try {
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { firstName, lastName },
-        },
+        email, password,
+        options: { data: { firstName, lastName } },
       });
-
       if (error) throw error;
       set({ user: data.user, loading: false });
       return { success: true, user: data.user };
@@ -76,7 +66,6 @@ export const useAppStore = create((set, get) => ({
       set({ user: null, following: [], notifications: [] });
       return { success: true };
     } catch (error) {
-      console.error('logout error:', error);
       return { success: false, error: error.message };
     }
   },
@@ -85,15 +74,9 @@ export const useAppStore = create((set, get) => ({
     try {
       const user = get().user;
       if (!user) return { success: false, error: 'No user signed in' };
-
-      // Update in Supabase auth User metadata
-      const { data, error } = await supabase.auth.updateUser({
-        data: newData
-      });
-
+      const { data, error } = await supabase.auth.updateUser({ data: newData });
       if (error) throw error;
-      
-      // Update local state
+      await supabase.from('profiles').update(newData).eq('id', user.id);
       set({ user: data.user });
       return { success: true };
     } catch (error) {
@@ -103,17 +86,15 @@ export const useAppStore = create((set, get) => ({
   },
 
   // ==========================================
-  // 2. ЛЕНТА АМБИЦИЙ И ПИТЧИ
+  // 2. ЛЕНТА (СОЦИАЛЬНАЯ СЕТЬ)
   // ==========================================
   feed: [],
-  pitches: [],
   feedPage: 0,
   hasMoreFeed: true,
   feedLoading: false,
   
   fetchFeed: async (reset = false) => {
     if (get().feedLoading || (!reset && !get().hasMoreFeed)) return;
-    
     set({ feedLoading: true });
     const page = reset ? 0 : get().feedPage;
     const PAGE_SIZE = 10;
@@ -123,24 +104,43 @@ export const useAppStore = create((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('goal_checkpoints')
-        .select(`
-          *,
-          goals ( title, user_id ),
-          profiles:goals(profiles(*)),
-          reactions ( id, type, user_id )
-        `)
+        .select(`*, goals ( id, title, user_id ), reactions ( id, type, user_id )`)
         .order('created_at', { ascending: false })
         .range(from, to);
         
       if (error) throw error;
 
-      // Handle profiles mapping (since goal_checkpoints -> goals -> profiles)
-      const mappedData = data.map(item => ({
-        ...item,
-        profiles: item.profiles?.[0] || item.goals?.profiles || { first_name: 'Пользователь' }
+      const mappedData = await Promise.all(data.map(async (item) => {
+        const authorId = item.goals?.user_id;
+        if (!authorId) return { ...item, profiles: { first_name: 'Пользователь' } };
+
+        // Try to get profile from DB
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, avatar_url')
+          .eq('id', authorId)
+          .single();
+        
+        if (profile) return { ...item, profiles: profile };
+
+        // Fallback: if it's the current user, use metadata
+        const currentUser = get().user;
+        if (currentUser && currentUser.id === authorId) {
+          return {
+            ...item,
+            profiles: {
+              id: authorId,
+              first_name: currentUser.user_metadata?.firstName || 'Malika',
+              last_name: currentUser.user_metadata?.lastName || '',
+              avatar_url: currentUser.user_metadata?.avatarUrl || null
+            }
+          };
+        }
+
+        return { ...item, profiles: { first_name: 'Builder' } };
       }));
 
-      set((state) => ({ 
+      set((state) => ({
         feed: reset ? mappedData : [...state.feed, ...mappedData],
         feedPage: page + 1,
         hasMoreFeed: data.length === PAGE_SIZE,
@@ -152,63 +152,105 @@ export const useAppStore = create((set, get) => ({
     }
   },
 
-  fetchPitches: async () => {
-    const { data, error } = await supabase
-      .from('pitches')
-      .select('*, profiles(*)')
-      .order('created_at', { ascending: false });
-      
-    if (error) {
-      console.error("Ошибка загрузки питчей:", error);
-    } else {
-      set({ pitches: data || [] });
-    }
-  },
-
-  addCheckpoint: async (goalId, content, imageUrl = null) => {
+  addCheckpoint: async (goalId, content) => {
     const user = get().user;
     if (!user) return false;
-
     const { data, error } = await supabase
       .from('goal_checkpoints')
-      .insert([{ goal_id: goalId, content, image_url: imageUrl }])
-      .select('*, goals(title, user_id)')
+      .insert([{ goal_id: goalId, content }])
+      .select('*, goals(id, title, user_id)')
       .single();
+    if (error) { console.error("Ошибка добавления:", error); return false; }
+    const newEntry = {
+      ...data,
+      profiles: {
+        id: user.id,
+        first_name: user.user_metadata?.firstName || 'Malika',
+        last_name: user.user_metadata?.lastName || '',
+        avatar_url: user.user_metadata?.avatarUrl || null
+      },
+      reactions: [],
+      comments: []
+    };
+    set((state) => ({ feed: [newEntry, ...state.feed] }));
+    return true;
+  },
 
-    if (error) {
-      console.error("Ошибка добавления чекпоинта:", error);
-      return false;
-    } else {
-      // Add profile info for UI
-      const newEntry = { ...data, profiles: user.user_metadata, reactions: [], image_url: imageUrl };
-      set((state) => ({ feed: [newEntry, ...state.feed] }));
-      return true;
+  sendReaction: async (checkpointId, type, authorId) => {
+    const user = get().user;
+    if (!user) return;
+    const feedItem = get().feed.find(f => f.id === checkpointId);
+    const alreadyReacted = feedItem?.reactions?.some(r => r.user_id === user.id);
+    if (alreadyReacted) return;
+
+    const newReaction = { id: Date.now().toString(), checkpoint_id: checkpointId, user_id: user.id, type };
+    set((state) => ({
+      feed: state.feed.map(item =>
+        item.id === checkpointId
+          ? { ...item, reactions: [...(item.reactions || []), newReaction] }
+          : item
+      )
+    }));
+    const { error } = await supabase.from('reactions').insert([{ checkpoint_id: checkpointId, user_id: user.id, type }]);
+    if (!error && authorId) get().createNotification(authorId, 'like', checkpointId);
+  },
+
+  // ── КОММЕНТАРИИ ──
+  comments: {}, // { [checkpointId]: [...] }
+
+  fetchComments: async (checkpointId) => {
+    const { data, error } = await supabase
+      .from('comments')
+      .select('*, profiles!user_id(id, first_name, last_name, avatar_url)')
+      .eq('checkpoint_id', checkpointId)
+      .order('created_at', { ascending: true });
+    if (!error) {
+      set(state => ({ comments: { ...state.comments, [checkpointId]: data } }));
     }
   },
 
-  addPitch: async (title, description, tech_stack) => {
+  addComment: async (checkpointId, text, authorId) => {
     const user = get().user;
-    if (!user) return false;
-
-    const newPitch = {
-      user_id: user.id,
-      title,
-      description,
-      tech_stack,
-    };
-
+    if (!user || !text.trim()) return false;
     const { data, error } = await supabase
-      .from('pitches')
-      .insert([newPitch])
-      .select('*, profiles(*)')
+      .from('comments')
+      .insert([{ checkpoint_id: checkpointId, user_id: user.id, text }])
+      .select('*, profiles!user_id(id, first_name, last_name, avatar)')
       .single();
+    if (error) { console.error("Ошибка комментария:", error); return false; }
+    set(state => ({
+      comments: {
+        ...state.comments,
+        [checkpointId]: [...(state.comments[checkpointId] || []), data]
+      }
+    }));
+    if (authorId) get().createNotification(authorId, 'comment', checkpointId);
+    return true;
+  },
 
-    if (error) {
-      console.error("Ошибка добавления питча:", error);
-      return false;
-    } else {
-      set((state) => ({ pitches: [data, ...state.pitches] }));
-      return true;
+  // ── ЛЮДИ (ПОЛЬЗОВАТЕЛИ) ──
+  people: [],
+  peopleLoading: false,
+
+  fetchPeople: async (search = '') => {
+    set({ peopleLoading: true });
+    try {
+      let query = supabase
+        .from('profiles')
+        .select('id, first_name, last_name, avatar_url, bio')
+        .order('created_at', { ascending: false })
+        .limit(60);
+
+      if (search.trim().length > 0) {
+        query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+      }
+
+      const { data, error } = await query;
+      if (!error) set({ people: data || [], peopleLoading: false });
+      else { console.error('fetchPeople error:', error); set({ peopleLoading: false }); }
+    } catch (e) {
+      console.error('fetchPeople exception:', e);
+      set({ peopleLoading: false });
     }
   },
 
@@ -224,21 +266,15 @@ export const useAppStore = create((set, get) => ({
       .from('follows')
       .select('following_id')
       .eq('follower_id', userId);
-    
     if (!error) set({ following: data.map(f => f.following_id) });
   },
 
   followUser: async (targetId) => {
     const user = get().user;
     if (!user) return;
-
-    const { error } = await supabase
-      .from('follows')
-      .insert([{ follower_id: user.id, following_id: targetId }]);
-
+    const { error } = await supabase.from('follows').insert([{ follower_id: user.id, following_id: targetId }]);
     if (!error) {
       set(state => ({ following: [...state.following, targetId] }));
-      // Notify target
       get().createNotification(targetId, 'follow');
     }
   },
@@ -246,53 +282,31 @@ export const useAppStore = create((set, get) => ({
   unfollowUser: async (targetId) => {
     const user = get().user;
     if (!user) return;
-
-    const { error } = await supabase
-      .from('follows')
-      .delete()
-      .match({ follower_id: user.id, following_id: targetId });
-
-    if (!error) {
-      set(state => ({ following: state.following.filter(id => id !== targetId) }));
-    }
+    const { error } = await supabase.from('follows').delete().match({ follower_id: user.id, following_id: targetId });
+    if (!error) set(state => ({ following: state.following.filter(id => id !== targetId) }));
   },
 
   fetchNotifications: async () => {
     const user = get().user;
     if (!user) return;
-
     const { data, error } = await supabase
       .from('notifications')
-      .select('*, actor:profiles!notifications_actor_id_fkey(*)')
+      .select('*, actor:profiles!actor_id(id, first_name, last_name, avatar_url)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
-
     if (!error) {
-      set({ 
-        notifications: data,
-        unreadNotificationsCount: data.filter(n => !n.read).length
-      });
+      set({ notifications: data, unreadNotificationsCount: data.filter(n => !n.read).length });
     }
   },
 
   createNotification: async (userId, type, contentId = null) => {
     const user = get().user;
     if (!user || user.id === userId) return;
-
-    await supabase.from('notifications').insert([{
-      user_id: userId,
-      actor_id: user.id,
-      type,
-      content_id: contentId
-    }]);
+    await supabase.from('notifications').insert([{ user_id: userId, actor_id: user.id, type, content_id: contentId }]);
   },
 
   markNotificationRead: async (id) => {
-    const { error } = await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('id', id);
-
+    const { error } = await supabase.from('notifications').update({ read: true }).eq('id', id);
     if (!error) {
       set(state => ({
         notifications: state.notifications.map(n => n.id === id ? { ...n, read: true } : n),
@@ -304,32 +318,25 @@ export const useAppStore = create((set, get) => ({
   markAllNotificationsRead: async () => {
     const user = get().user;
     if (!user) return;
-
-    const { error } = await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('user_id', user.id);
-
+    const { error } = await supabase.from('notifications').update({ read: true }).eq('user_id', user.id);
     if (!error) {
       set(state => ({
         notifications: state.notifications.map(n => ({ ...n, read: true })),
-        unreadNotificationsCount: 0 
+        unreadNotificationsCount: 0
       }));
     }
   },
 
-  // === ПРОФИЛЬ И ЦЕЛИ ПОЛЬЗОВАТЕЛЯ ===
+  // ── ПРОФИЛЬ И ЦЕЛИ ──
   userGoals: [],
   userCheckpoints: [],
 
   fetchUserGoalsAndCheckpoints: async (userId) => {
     if (!userId) return;
-    
     const [goalsRes, checkRes] = await Promise.all([
       supabase.from('goals').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('goal_checkpoints').select('*, goals!inner(user_id)').eq('goals.user_id', userId).order('created_at', { ascending: false })
     ]);
-
     if (!goalsRes.error) set({ userGoals: goalsRes.data });
     if (!checkRes.error) set({ userCheckpoints: checkRes.data });
   },
@@ -337,43 +344,10 @@ export const useAppStore = create((set, get) => ({
   addGoal: async (title) => {
     const user = get().user;
     if (!user) return null;
-
-    const { data, error } = await supabase
-      .from('goals')
-      .insert([{ user_id: user.id, title }])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Ошибка добавления цели:", error);
-      return null;
-    } else {
-      set((state) => ({ userGoals: [data, ...state.userGoals] }));
-      return data;
-    }
-  },
-
-  sendReaction: async (checkpointId, type, authorId) => {
-    const user = get().user;
-    if (!user) return;
-
-    const newReaction = { id: Date.now().toString(), checkpoint_id: checkpointId, user_id: user.id, type };
-    
-    set((state) => ({
-      feed: state.feed.map(item => 
-        item.id === checkpointId 
-          ? { ...item, reactions: [...(item.reactions || []), newReaction] } 
-          : item
-      )
-    }));
-
-    const { error } = await supabase
-      .from('reactions')
-      .insert([{ checkpoint_id: checkpointId, user_id: user.id, type }]);
-
-    if (!error && authorId) {
-      get().createNotification(authorId, 'like', checkpointId);
-    }
+    const { data, error } = await supabase.from('goals').insert([{ user_id: user.id, title }]).select().single();
+    if (error) { console.error("Ошибка добавления цели:", error); return null; }
+    set((state) => ({ userGoals: [data, ...state.userGoals] }));
+    return data;
   },
 
   // ==========================================
@@ -382,10 +356,7 @@ export const useAppStore = create((set, get) => ({
   language: localStorage.getItem('app-language') || 'ru',
   theme: localStorage.getItem('app-theme') || 'light',
 
-  setLanguage: (lang) => {
-    localStorage.setItem('app-language', lang);
-    set({ language: lang });
-  },
+  setLanguage: (lang) => { localStorage.setItem('app-language', lang); set({ language: lang }); },
 
   setTheme: (theme) => {
     localStorage.setItem('app-theme', theme);
@@ -398,9 +369,6 @@ export const useAppStore = create((set, get) => ({
     document.documentElement.classList.toggle('dark', theme === 'dark');
     set({ theme });
   }
-
 }));
 
-// Экспортируем второе имя (useAuthStore), чтобы старые файлы, 
-// где ты использовала useAuthStore, не сломались и продолжали работать.
 export const useAuthStore = useAppStore;

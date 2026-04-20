@@ -1,219 +1,204 @@
 import { useState, useRef } from "react";
-import { X, ChevronLeft, Plus, Image as ImageIcon, Loader2 } from "lucide-react";
+import { X, Image as ImageIcon, Loader2, Target, ChevronRight, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "../store/store";
 import { useToast } from "./ui/Toast";
 import { supabase } from "../supabase";
 
 export default function CreateModal({ isOpen, onClose }) {
-  const [createMode, setCreateMode] = useState("menu");
-  const { userGoals, addCheckpoint, addPitch, addGoal, user } = useAppStore();
+  const { userGoals, addCheckpoint, addGoal, user } = useAppStore();
   const { show } = useToast();
   const [loading, setLoading] = useState(false);
 
   const [checkpointText, setCheckpointText] = useState("");
   const [selectedGoalId, setSelectedGoalId] = useState("");
   const [newGoalTitle, setNewGoalTitle] = useState("");
-  const [pitchTitle, setPitchTitle] = useState("");
-  const [pitchDesc, setPitchDesc] = useState("");
-  const [pitchStack, setPitchStack] = useState("");
-  
+
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleClose = () => {
     onClose();
-    setTimeout(() => {
-      setCreateMode("menu");
-      resetForm();
-    }, 300);
+    setTimeout(() => resetForm(), 300);
   };
 
   const resetForm = () => {
-    setCheckpointText(""); setPitchTitle(""); setPitchDesc(""); setPitchStack(""); setNewGoalTitle("");
+    setCheckpointText(""); setNewGoalTitle(""); setSelectedGoalId("");
     setImageFile(null); setImagePreview(null);
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
+    if (file) { setImageFile(file); setImagePreview(URL.createObjectURL(file)); }
   };
 
   const uploadImage = async (file) => {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${user.id}/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('post_images')
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data } = supabase.storage
-      .from('post_images')
-      .getPublicUrl(filePath);
-
+    const filePath = `${user.id}/${Math.random()}.${fileExt}`;
+    const { error } = await supabase.storage.from('post_images').upload(filePath, file);
+    if (error) throw error;
+    const { data } = supabase.storage.from('post_images').getPublicUrl(filePath);
     return data.publicUrl;
   };
 
-  const handleSubmitCheckpoint = async () => {
+  const handleSubmit = async () => {
     if (!checkpointText.trim()) return;
     setLoading(true);
     try {
       let goalId = selectedGoalId;
-      if (!goalId && newGoalTitle.trim()) {
-        const g = await addGoal(newGoalTitle);
-        if (g) goalId = g.id;
-      }
       
-      let imageUrl = null;
-      if (imageFile) {
-        imageUrl = await uploadImage(imageFile);
+      // If no goal is selected, try to find or create a default one
+      if (!goalId) {
+        if (newGoalTitle.trim()) {
+           const g = await addGoal(newGoalTitle);
+           if (g) goalId = g.id;
+        } else if (userGoals && userGoals.length > 0) {
+           // Use the most recent goal as default
+           goalId = userGoals[0].id;
+        } else {
+           // Create a default life goal
+           const g = await addGoal("Мой путь");
+           if (g) goalId = g.id;
+        }
       }
 
+      let imageUrl = null;
+      if (imageFile) imageUrl = await uploadImage(imageFile);
       const ok = await addCheckpoint(goalId, checkpointText, imageUrl);
       if (ok) {
-        show("Прогресс сохранен!", "success");
+        show("Шаг опубликован в ленте! 🎉", "success");
         handleClose();
+      } else {
+        show("Ошибка публикации", "error");
       }
-    } catch (error) {
+    } catch (err) {
       show("Ошибка при сохранении", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmitPitch = async () => {
-    if (!pitchTitle.trim() || !pitchDesc.trim()) return;
-    setLoading(true);
-    try {
-      const stack = pitchStack.split(",").map(s => s.trim()).filter(Boolean);
-      const ok = await addPitch(pitchTitle, pitchDesc, stack);
-      if (ok) {
-        show("Питч запущен в Radar!", "success");
-        handleClose();
-      }
-    } catch (error) {
-      show("Ошибка при запуске", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const canSubmit = checkpointText.trim().length > 0 && !loading;
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div key="bd" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={handleClose} className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md"
+          {/* Backdrop */}
+          <motion.div key="bd"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={handleClose}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-md"
           />
+
+          {/* Sheet */}
           <motion.div key="sheet"
-            initial={{ y: "100%", opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 z-50 md:w-[480px] md:left-1/2 md:-translate-x-1/2 md:bottom-10 md:rounded-[32px] rounded-t-[32px]"
-            style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" }}
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0 }}
+            transition={{ type: "spring", damping: 28, stiffness: 220 }}
+            className="fixed bottom-0 left-0 right-0 z-50 md:w-[520px] md:left-1/2 md:-translate-x-1/2 md:bottom-10 md:rounded-[2rem] rounded-t-[2rem]"
+            style={{ backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.3)" }}
           >
-            <div className="w-12 h-1 rounded-full mx-auto mt-4 bg-muted-foreground/20" />
-            <div className="px-8 py-8">
-              <div className="flex items-center justify-between mb-8">
-                {createMode !== "menu" && (
-                  <button onClick={() => setCreateMode("menu")} className="p-2 -ml-2 rounded-xl transition-colors hover:bg-muted-foreground/10" style={{ color: "var(--text-primary)" }}>
-                    <ChevronLeft size={24} />
-                  </button>
-                )}
-                <h3 className="text-xl font-black flex-1 tracking-tight" style={{ color: "var(--text-primary)" }}>
-                  {createMode === "menu" ? "Новое действие" : createMode === "checkpoint" ? "Шаг к цели" : "Питч проекта"}
-                </h3>
-                <button onClick={handleClose} className="w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-muted-foreground/10" style={{ color: "var(--text-muted)" }}>
+            {/* Handle */}
+            <div className="w-10 h-1 rounded-full mx-auto mt-4 bg-muted-foreground/20" />
+
+            <div className="px-7 py-7">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-7">
+                <div>
+                  <h3 className="text-[22px] font-black tracking-tight" style={{ color: "var(--text-primary)" }}>
+                    Поделиться шагом
+                  </h3>
+                  <p className="text-[13px] font-medium opacity-40 mt-0.5">Что вы сделали сегодня?</p>
+                </div>
+                <button onClick={handleClose}
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-muted-foreground/10"
+                  style={{ color: "var(--text-muted)" }}>
                   <X size={20} />
                 </button>
               </div>
 
-              {createMode === "menu" && (
-                <div className="space-y-3 pb-4">
-                  {[
-                    { mode: "checkpoint", emoji: "⚡️", title: "Зафиксировать прогресс", sub: "Что вы сделали сегодня?" },
-                    { mode: "pitch", emoji: "🎯", title: "Запустить проект", sub: "Найдите команду для идеи" },
-                  ].map(item => (
-                    <button key={item.mode} onClick={() => setCreateMode(item.mode)}
-                      className="w-full flex items-center gap-4 p-5 rounded-3xl text-left border transition-all hover:scale-[1.02] active:scale-[0.98]"
-                      style={{ backgroundColor: "var(--bg-input)", borderColor: "var(--border)" }}
+              <div className="space-y-4">
+                {/* Goal selector */}
+                {userGoals?.length > 0 ? (
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-2" style={{ color: "var(--text-secondary)" }}>
+                      К какой цели?
+                    </label>
+                    <select
+                      value={selectedGoalId}
+                      onChange={e => setSelectedGoalId(e.target.value)}
+                      className="input-base text-sm"
+                      style={{ color: "var(--text-primary)" }}
                     >
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-white shadow-sm">{item.emoji}</div>
-                      <div>
-                        <div className="font-bold text-[16px]" style={{ color: "var(--text-primary)" }}>{item.title}</div>
-                        <div className="text-[13px] font-medium opacity-60" style={{ color: "var(--text-secondary)" }}>{item.sub}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {createMode === "checkpoint" && (
-                <div className="space-y-4 pb-4">
-                  {userGoals?.length > 0 ? (
-                    <select value={selectedGoalId} onChange={e => setSelectedGoalId(e.target.value)} className="input-base">
-                      <option value="" disabled>Выберите вашу цель</option>
+                      <option value="">Без цели / свободный шаг</option>
                       {userGoals.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}
                     </select>
-                  ) : (
-                    <input type="text" placeholder="Какова ваша глобальная цель?" value={newGoalTitle} onChange={e => setNewGoalTitle(e.target.value)} className="input-base" />
-                  )}
-                  
-                  <textarea value={checkpointText} onChange={e => setCheckpointText(e.target.value)} placeholder="Опишите ваш сегодняшний шаг..." rows={4} className="input-base resize-none" />
-                  
-                  {/* Image Upload Area */}
-                  <div 
-                    onClick={() => fileInputRef.current.click()}
-                    className="relative w-full h-32 rounded-2xl border-2 border-dashed border-muted-foreground/20 flex flex-col items-center justify-center cursor-pointer hover:border-pink-500/50 transition-all overflow-hidden"
-                  >
-                    <input type="file" hidden ref={fileInputRef} accept="image/*" onChange={handleImageChange} />
-                    {imagePreview ? (
-                      <>
-                        <img src={imagePreview} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                          <ImageIcon className="text-white" size={24} />
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <ImageIcon size={24} className="text-muted-foreground/40 mb-2" />
-                        <span className="text-xs font-bold text-muted-foreground/40 uppercase tracking-widest">Добавить фото</span>
-                      </>
-                    )}
                   </div>
+                ) : (
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-2" style={{ color: "var(--text-secondary)" }}>
+                      Назовите вашу цель (необязательно)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Например: Научиться программировать"
+                      value={newGoalTitle}
+                      onChange={e => setNewGoalTitle(e.target.value)}
+                      className="input-base text-sm"
+                    />
+                  </div>
+                )}
 
-                  <button 
-                    disabled={loading || !checkpointText.trim()}
-                    onClick={handleSubmitCheckpoint} 
-                    className="btn-pulse w-full mt-2 flex items-center justify-center gap-2"
-                  >
-                    {loading && <Loader2 size={18} className="animate-spin" />}
-                    {loading ? "Публикация..." : "Опубликовать"}
-                  </button>
+                {/* Post text */}
+                <div>
+                  <label className="block text-[11px] font-black uppercase tracking-widest opacity-40 mb-2" style={{ color: "var(--text-secondary)" }}>
+                    Ваш шаг *
+                  </label>
+                  <textarea
+                    value={checkpointText}
+                    onChange={e => setCheckpointText(e.target.value)}
+                    placeholder="Опишите что конкретно вы сделали..."
+                    rows={4}
+                    className="input-base resize-none text-[15px]"
+                    autoFocus
+                  />
                 </div>
-              )}
 
-              {createMode === "pitch" && (
-                <div className="space-y-4 pb-4">
-                  <input type="text" placeholder="Название проекта" value={pitchTitle} onChange={e => setPitchTitle(e.target.value)} className="input-base" />
-                  <textarea value={pitchDesc} onChange={e => setPitchDesc(e.target.value)} placeholder="В чем суть и кого вы ищете?" rows={3} className="input-base resize-none" />
-                  <input type="text" placeholder="Стек (React, Figma, AI...)" value={pitchStack} onChange={e => setPitchStack(e.target.value)} className="input-base" />
-                  <button 
-                    disabled={loading || !pitchTitle.trim()}
-                    onClick={handleSubmitPitch} 
-                    className="btn-pulse w-full mt-2 flex items-center justify-center gap-2"
-                  >
-                    {loading && <Loader2 size={18} className="animate-spin" />}
-                    {loading ? "Запуск..." : "Запустить Radar"}
-                  </button>
+                {/* Image Upload */}
+                <div
+                  onClick={() => fileInputRef.current.click()}
+                  className="relative w-full h-28 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-blue-500/50 hover:bg-blue-500/5 transition-all overflow-hidden"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <input type="file" hidden ref={fileInputRef} accept="image/*" onChange={handleImageChange} />
+                  {imagePreview ? (
+                    <>
+                      <img src={imagePreview} className="w-full h-full object-cover" alt="" />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <ImageIcon className="text-white" size={24} />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon size={22} className="mb-1.5 opacity-30" />
+                      <span className="text-[11px] font-black uppercase tracking-widest opacity-30">Добавить фото</span>
+                    </>
+                  )}
                 </div>
-              )}
+
+                {/* Submit */}
+                <button
+                  disabled={!canSubmit}
+                  onClick={handleSubmit}
+                  className="btn-pulse w-full flex items-center justify-center gap-2 mt-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {loading && <Loader2 size={18} className="animate-spin" />}
+                  {loading ? "Публикация..." : "Опубликовать в ленту"}
+                </button>
+              </div>
             </div>
           </motion.div>
         </>

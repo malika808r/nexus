@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
-import { Home, Map, Target, User, Plus, Moon, Sun, Sparkles, HelpCircle, Bell } from "lucide-react";
+import { Home, Target, User, Plus, Moon, Sun, Sparkles, HelpCircle, Bell, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useAppStore } from "../store/store";
@@ -21,20 +21,18 @@ function ThemeToggle() {
   );
 }
 
-const getNavItems = (t, unreadCount) => [
+const getNavItems = (t) => [
   { path: "/app/feed",      icon: Home,           label: t('nav.feed') },
-  { path: "/app/search",    icon: Map,            label: t('nav.search') },
   { isAction: true },
-  { path: "/app/notifications", icon: Bell,       label: "Уведомления", badge: unreadCount > 0 ? unreadCount : null },
   { path: "/app/profile",   icon: User,           label: t('nav.profile') },
 ];
 
 function BottomNav({ onCreateOpen }) {
   const { t } = useTranslation();
-  const { unreadNotificationsCount } = useAppStore();
+  const unreadNotificationsCount = useAppStore(state => state.unreadNotificationsCount || 0);
   const location = useLocation();
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + "/");
-  const NAV_ITEMS = getNavItems(t, unreadNotificationsCount);
+  const NAV_ITEMS = getNavItems(t);
 
   return (
     <nav
@@ -52,7 +50,7 @@ function BottomNav({ onCreateOpen }) {
               key={idx}
               onClick={onCreateOpen}
               className="w-14 h-14 rounded-[1.5rem] flex items-center justify-center shadow-lg active:scale-95 transition-all -mt-8"
-              style={{ background: "linear-gradient(135deg, #ec4899, #84cc16)" }}
+              style={{ background: "linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-secondary), var(--color-brand-accent))" }}
             >
               <Plus size={28} strokeWidth={3} color="white" />
             </button>
@@ -62,19 +60,14 @@ function BottomNav({ onCreateOpen }) {
         const Icon = item.icon;
         return (
           <Link key={idx} to={item.path} className="flex flex-col items-center gap-1 transition-all relative">
-            <div className={`p-2 rounded-xl transition-all ${active ? 'bg-pink-500/10 scale-110' : ''}`}>
+            <div className={`p-2 rounded-xl transition-all ${active ? 'bg-blue-500/10 scale-110' : ''}`}>
               <Icon
                 size={24}
                 strokeWidth={active ? 2.5 : 2}
-                style={{ color: active ? "#ec4899" : "var(--text-muted)" }}
+                style={{ color: active ? "var(--color-brand-primary)" : "var(--text-muted)" }}
               />
-              {item.badge && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-[var(--bg-card)]">
-                  {item.badge}
-                </span>
-              )}
             </div>
-            {active && <div className="w-1 h-1 rounded-full bg-pink-500" />}
+            {active && <div className="w-1 h-1 rounded-full bg-blue-500" />}
           </Link>
         );
       })}
@@ -84,16 +77,14 @@ function BottomNav({ onCreateOpen }) {
 
 function SideNav({ onCreateOpen }) {
   const { t } = useTranslation();
-  const { unreadNotificationsCount } = useAppStore();
   const location = useLocation();
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + "/");
-  const navigate = useNavigate();
-  const NAV_ITEMS = getNavItems(t, unreadNotificationsCount);
+  const NAV_ITEMS = getNavItems(t);
 
   return (
     <aside className="hidden md:flex flex-col h-screen w-[280px] shrink-0 p-4 sticky top-0 transition-all duration-500">
       <div className="card h-full flex flex-col overflow-hidden border-none shadow-2xl relative bg-white/5 backdrop-blur-3xl">
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-pink-500/5 to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none" />
         
         <div className="px-6 py-8 flex items-center justify-between relative z-10">
           <div className="flex items-center gap-3">
@@ -129,25 +120,24 @@ function SideNav({ onCreateOpen }) {
                     color: active ? "var(--text-primary)" : "var(--text-secondary)",
                   }}
                 >
-                  {active && <motion.div layoutId="nav-glow" className="absolute inset-0 bg-pink-500/5 glow-card-pink pointer-events-none" />}
+                  {active && <motion.div layoutId="nav-glow" className="absolute inset-0 bg-blue-500/5 glow-card-primary pointer-events-none" />}
                   <div className="relative">
                     <Icon size={20} strokeWidth={active ? 2.5 : 2} className="relative z-10" 
-                          style={{ color: active ? "#ec4899" : "inherit" }} />
-                    {item.badge && (
-                      <span className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
-                        {item.badge}
-                      </span>
-                    )}
+                          style={{ color: active ? "var(--color-brand-primary)" : "inherit" }} />
                   </div>
                   <span className="relative z-10">{item.label}</span>
                 </Link>
               );
             })}
             
-            {/* Added Goals Link as it's separate from common nav items in some versions */}
-            <Link to="/app/goals" className={`group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[15px] font-bold transition-all ${isActive('/app/goals') ? 'bg-[var(--bg-input)] text-primary' : 'text-muted-foreground'}`}>
-               <Target size={20} style={{ color: isActive('/app/goals') ? "#ec4899" : "inherit" }} />
-               <span>Basecamp</span>
+            <Link to="/app/goals" className={`group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[15px] font-bold transition-all ${isActive('/app/goals') ? 'bg-[var(--bg-input)] filter-none' : 'text-[var(--text-secondary)]'} `} style={{ color: isActive('/app/goals') ? "var(--text-primary)" : "var(--text-secondary)" }}>
+               <Target size={20} style={{ color: isActive('/app/goals') ? "var(--color-brand-primary)" : "inherit" }} />
+               <span>Мои цели</span>
+            </Link>
+            
+            <Link to="/app/people" className={`group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[15px] font-bold transition-all ${isActive('/app/people') ? 'bg-[var(--bg-input)] ' : 'text-[var(--text-secondary)]'}`} style={{ color: isActive('/app/people') ? "var(--text-primary)" : "var(--text-secondary)" }}>
+               <Users size={20} style={{ color: isActive('/app/people') ? "var(--color-brand-primary)" : "inherit" }} />
+               <span>Люди</span>
             </Link>
           </div>
         </nav>
@@ -180,6 +170,8 @@ function SideNav({ onCreateOpen }) {
 export default function Layout() {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const user = useAppStore(state => state.user);
+  const unreadNotificationsCount = useAppStore(state => state.unreadNotificationsCount || 0);
 
   useEffect(() => {
     const handleOpenGuide = () => setIsGuideOpen(true);
@@ -196,22 +188,49 @@ export default function Layout() {
 
   return (
     <div className="flex w-full min-h-screen transition-all duration-500" style={{ backgroundColor: "var(--bg-base)" }}>
-      {/* Mesh Background */}
       <div className="mesh-bg fixed inset-0 pointer-events-none" />
       
-      {/* Responsive Wrapper */}
       <div className="flex w-full max-w-[1440px] mx-auto min-h-screen">
         <SideNav onCreateOpen={() => setIsCreateOpen(true)} />
         
-        <main className="flex-1 w-full relative transition-all duration-500 pb-[100px] md:pb-4 md:px-4 md:py-4">
-           <Outlet />
+        <main className="flex-1 w-full relative transition-all duration-500 pb-[100px] md:pb-4 md:px-4 md:py-4 flex flex-col">
+            <div className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 mb-4 backdrop-blur-3xl border shadow-sm rounded-b-[2rem] md:rounded-[2rem] md:mt-2"
+                 style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+               <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg md:hidden">
+                     <Sparkles size={18} />
+                  </div>
+                  <h2 className="font-black text-lg tracking-tight md:hidden">Nexus</h2>
+               </div>
+               
+               <div className="flex items-center gap-4">
+                  <Link to="/app/chats" className="relative p-2 rounded-xl hover:bg-muted-foreground/10 transition-colors">
+                     <Sparkles size={20} className="text-blue-600" />
+                     <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
+                  </Link>
+                  <Link to="/app/notifications" className="relative p-2 rounded-xl hover:bg-muted-foreground/10 transition-colors">
+                     <Bell size={20} style={{ color: 'var(--text-primary)' }} />
+                     {unreadNotificationsCount > 0 && (
+                       <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-[var(--bg-card)]">
+                         {unreadNotificationsCount}
+                       </span>
+                     )}
+                  </Link>
+                  <div className="w-8 h-8 rounded-full border-2 border-blue-500/20 overflow-hidden">
+                     {user?.user_metadata?.avatarUrl 
+                       ? <img src={user.user_metadata.avatarUrl} className="w-full h-full object-cover" />
+                       : <div className="w-full h-full bg-slate-200 flex items-center justify-center text-[10px] font-bold">M</div>
+                     }
+                  </div>
+               </div>
+            </div>
+
+            <Outlet />
         </main>
       </div>
 
       <BottomNav onCreateOpen={() => setIsCreateOpen(true)} />
-
       <InteractiveGuide isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
-      
       <CreateModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
     </div>
   );

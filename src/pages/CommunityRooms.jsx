@@ -5,10 +5,10 @@ import { MessageCircle, Music, Code, Trophy, Sparkles, Plus, Info } from 'lucide
 import { motion } from 'framer-motion';
 
 const ROOMS = [
-  { id: 'literature', title: 'Culture & Cinema', icon: Music, color: 'from-pink-500 to-indigo-500', count: 12 },
-  { id: 'it', title: 'Tech & Startup', icon: Code, color: 'from-blue-500 to-emerald-500', count: 24 },
-  { id: 'sport', title: 'Sport & Active', icon: Trophy, color: 'from-orange-500 to-red-500', count: 8 },
-  { id: 'aesthetic', title: 'Daily Pulse', icon: Sparkles, color: 'from-lime-500 to-emerald-500', count: 45 },
+  { id: 'general', title: 'Общий чат 👋', icon: Sparkles, color: 'from-blue-500 to-indigo-500', count: 124 },
+  { id: 'it', title: 'Идеи и Проекты 💡', icon: Code, color: 'from-emerald-500 to-teal-500', count: 42 },
+  { id: 'aesthetic', title: 'Вдохновение ✨', icon: Music, color: 'from-pink-500 to-rose-500', count: 88 },
+  { id: 'sport', title: 'Личные цели 🎯', icon: Trophy, color: 'from-orange-500 to-red-500', count: 56 },
 ];
 
 export default function CommunityRooms() {
@@ -21,19 +21,19 @@ export default function CommunityRooms() {
       <header className="mb-12">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-14 h-14 rounded-[2rem] flex items-center justify-center text-white shadow-lg glow-card-pink"
-               style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)' }}>
+               style={{ background: 'linear-gradient(135deg, #1d4ed8, #8b5cf6)' }}>
             <MessageCircle size={28} />
           </div>
           <div>
             <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Rooms</h1>
-            <p className="text-sm font-bold uppercase tracking-widest bg-pink-500/10 text-pink-600 px-3 py-1 rounded-full w-fit mt-1">Коммуникация созидателей</p>
+            <p className="text-sm font-bold uppercase tracking-widest bg-blue-600/10 text-pink-600 px-3 py-1 rounded-full w-fit mt-1">Коммуникация созидателей</p>
           </div>
         </div>
 
         <div className="card p-6 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)]" style={{ backgroundColor: 'var(--bg-card)' }}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-muted-foreground/5 flex items-center justify-center shrink-0">
-              <Info size={24} className="text-pink-500" />
+              <Info size={24} className="text-blue-600" />
             </div>
             <p className="text-[15px] font-medium leading-relaxed opacity-70">
               Комнаты — это место для свободного общения. Выбирайте тему, заходите и пишите. 

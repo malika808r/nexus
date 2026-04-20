@@ -56,7 +56,7 @@ export default function Welcome() {
           className="mb-10 inline-flex items-center gap-3 px-6 py-2 rounded-full border border-muted-foreground/10"
           style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' }}
         >
-          <Sparkles size={14} className="text-pink-500" />
+          <Sparkles size={14} className="text-blue-500" />
           <span className="text-[12px] font-bold uppercase tracking-widest opacity-60">{t('welcomeHero.badge')}</span>
         </motion.div>
 

@@ -115,7 +115,7 @@ export default function Login() {
       <div className="mt-12 text-center">
          <p className="text-sm font-medium opacity-50" style={{ color: 'var(--text-primary)' }}>
            Нет аккаунта?{' '}
-           <Link to="/auth/register" className="font-black text-pink-500 hover:underline">
+           <Link to="/auth/register" className="font-black text-blue-600 hover:underline">
              Создать
            </Link>
          </p>

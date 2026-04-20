@@ -10,19 +10,7 @@ export default function EditProfileModal({
   setProfileData,
   handleAvatarUpload
 }) {
-  const [skillInput, setSkillInput] = useState('');
   const [interestInput, setInterestInput] = useState('');
-
-  const addSkill = () => {
-    if (skillInput.trim() && !profileData.skills?.includes(skillInput.trim())) {
-      setProfileData({ ...profileData, skills: [...(profileData.skills || []), skillInput.trim()] });
-      setSkillInput('');
-    }
-  };
-
-  const removeSkill = (skill) => {
-    setProfileData({ ...profileData, skills: profileData.skills.filter(s => s !== skill) });
-  };
 
   const handleSave = async () => {
     const { updateProfile } = useAppStore.getState();
@@ -30,7 +18,6 @@ export default function EditProfileModal({
       firstName: profileData.firstName,
       lastName: profileData.lastName,
       bio: profileData.bio,
-      skills: profileData.skills,
       interests: profileData.interests,
       avatarUrl: profileData.avatarUrl
     });
@@ -77,7 +64,7 @@ export default function EditProfileModal({
                     {profileData.avatarUrl ? (
                       <img src={profileData.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="text-4xl font-black text-pink-500">{profileData.firstName?.charAt(0) || 'A'}</div>
+                      <div className="text-4xl font-black text-blue-600">{profileData.firstName?.charAt(0) || 'A'}</div>
                     )}
                   </div>
                   <label className="absolute -bottom-2 -right-2 w-11 h-11 bg-slate-900 shadow-xl rounded-2xl flex items-center justify-center text-white cursor-pointer transition-transform hover:scale-110 active:scale-95">
@@ -126,36 +113,7 @@ export default function EditProfileModal({
                 </div>
               </div>
 
-              {/* Skills */}
-              <div className="space-y-6 pt-4">
-                <div className="flex items-center justify-between">
-                   <label className="text-[12px] font-black uppercase tracking-widest opacity-40 px-1">Навыки и суперсилы</label>
-                   <span className="text-[10px] font-black uppercase tracking-widest opacity-20">{profileData.skills?.length || 0}/10</span>
-                </div>
-                <div className="flex gap-3">
-                  <input 
-                    type="text" 
-                    value={skillInput} 
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
-                    placeholder="Design, React, AI..."
-                    className="input-base h-14 px-6 flex-1 text-[16px] font-bold"
-                  />
-                  <button type="button" onClick={addSkill} className="w-14 h-14 flex items-center justify-center rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xl transition-all hover:scale-105 active:scale-95 shrink-0">
-                    <Plus size={24} />
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {profileData.skills?.map(skill => (
-                    <motion.div key={skill} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                         className="flex items-center gap-2 px-4 py-2 rounded-xl text-[14px] font-bold bg-muted-foreground/5 border border-muted-foreground/10"
-                    >
-                      {skill}
-                      <button type="button" onClick={() => removeSkill(skill)} className="opacity-40 hover:opacity-100 hover:text-red-500 transition-all text-lg leading-none">×</button>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
+
             </div>
 
             {/* Footer Action */}

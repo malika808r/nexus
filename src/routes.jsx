@@ -5,16 +5,14 @@ import AuthLayout from './components/Auth/AuthLayout';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Feed from './pages/Feed';
-import CollabSpace from './pages/CollabSpace';
+import People from './pages/People';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import Welcome from './pages/Welcome';
 import ErrorBoundary from './components/ErrorBoundary';
 import ChatInterface from './components/ChatInterface';
 import CommunityRooms from './pages/CommunityRooms';
-import FindCompanion from './components/FindCompanion';
 import Basecamp from './pages/Basecamp';
-import MapView from './pages/Events';
 import Support from './pages/Support';
 import Notifications from './pages/Notifications';
 
@@ -41,16 +39,12 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute><Basecamp /></ProtectedRoute>,
       },
       {
+        path: 'people',
+        element: <ProtectedRoute><People /></ProtectedRoute>,
+      },
+      {
         path: 'support',
         element: <ProtectedRoute><Support /></ProtectedRoute>,
-      },
-      {
-        path: 'events',
-        element: <ProtectedRoute><MapView /></ProtectedRoute>,
-      },
-      {
-        path: 'collab',
-        element: <ProtectedRoute><CollabSpace /></ProtectedRoute>,
       },
       {
         path: 'profile',
@@ -72,9 +66,14 @@ export const router = createBrowserRouter([
         path: 'chats/:roomId',
         element: <ProtectedRoute><ChatInterface /></ProtectedRoute>,
       },
+      // Legacy redirects
       {
-        path: 'search',
-        element: <ProtectedRoute><FindCompanion /></ProtectedRoute>,
+        path: 'collab',
+        element: <Navigate to="/app/people" replace />,
+      },
+      {
+        path: 'collab/:id',
+        element: <Navigate to="/app/people" replace />,
       },
     ],
   },
@@ -83,26 +82,11 @@ export const router = createBrowserRouter([
     element: <AuthLayout />,
     errorElement: <ErrorBoundary />,
     children: [
-      {
-        path: 'login',
-        element: <Login />,
-      },
-      {
-        path: 'register',
-        element: <Register />,
-      },
+      { path: 'login', element: <Login /> },
+      { path: 'register', element: <Register /> },
     ],
   },
-  {
-    path: '/login',
-    element: <Navigate to="/auth/login" replace />,
-  },
-  {
-    path: '/register',
-    element: <Navigate to="/auth/register" replace />,
-  },
-  {
-    path: '*',
-    element: <NotFound />,
-  },
-]);
+  { path: '/login', element: <Navigate to="/auth/login" replace /> },
+  { path: '/register', element: <Navigate to="/auth/register" replace /> },
+  { path: '*', element: <NotFound /> },
+]);

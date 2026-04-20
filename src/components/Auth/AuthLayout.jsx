@@ -12,13 +12,13 @@ export default function AuthLayout() {
         animate={{ x: [0, 80, -40, 0], y: [0, -80, 40, 0] }}
         transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
         className="absolute -top-[30%] -left-[10%] w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full blur-[120px] pointer-events-none opacity-20 dark:opacity-30"
-        style={{ backgroundColor: '#ec4899' }}
+        style={{ backgroundColor: '#1d4ed8' }}
       />
       <motion.div 
         animate={{ x: [0, -100, 60, 0], y: [0, 80, -40, 0] }}
         transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
         className="absolute -bottom-[20%] -right-[10%] w-[50vw] h-[50vw] max-w-[500px] max-h-[500px] rounded-full blur-[120px] pointer-events-none opacity-20 dark:opacity-30"
-        style={{ backgroundColor: '#84cc16' }}
+        style={{ backgroundColor: '#047857' }}
       />
 
       {/* Logo */}

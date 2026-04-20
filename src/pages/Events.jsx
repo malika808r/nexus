@@ -8,8 +8,8 @@ import { Search, MapPin, Users, Calendar, Ticket, Info, Sparkles } from 'lucide-
 import { useAppStore } from '../store/store';
 
 const EVENT_ICONS = {
-  hackathon: { color: '#ec4899', emoji: '🚀', label: 'Хакатон' },
-  meetup:    { color: '#84cc16', emoji: '👥', label: 'Митап' },
+  hackathon: { color: '#1d4ed8', emoji: '🚀', label: 'Хакатон' },
+  meetup:    { color: '#047857', emoji: '👥', label: 'Митап' },
   coworking: { color: '#6366f1', emoji: '💻', label: 'Коворкинг' },
   coffee:    { color: '#f97316', emoji: '☕', label: 'Coffee break' },
 };
@@ -66,13 +66,13 @@ export default function Events() {
           >
             <Popup className="custom-popup">
               <div className="card p-4 border-none shadow-xl">
-                <div className="text-[10px] font-black uppercase tracking-widest mb-1 text-pink-500">
+                <div className="text-[10px] font-black uppercase tracking-widest mb-1 text-blue-600">
                   {EVENT_ICONS[event.type].label}
                 </div>
                 <div className="font-black text-[15px] leading-tight mb-2">
                   {event.title}
                 </div>
-                <div className="text-xs font-bold mb-3 text-lime-500">{event.date}</div>
+                <div className="text-xs font-bold mb-3 text-emerald-600">{event.date}</div>
                 <button 
                   onClick={(e) => { e.stopPropagation(); show('Заявка на участие отправлена', 'success'); }}
                   className="btn-pulse w-full h-10 text-[11px] py-0 px-4"
@@ -91,7 +91,7 @@ export default function Events() {
         <div onClick={() => setSheetOpen(true)}
           className="flex items-center gap-4 px-6 h-16 rounded-[2rem] shadow-2xl border cursor-pointer hover:scale-[1.01] transition-all"
           style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)', backdropFilter: 'blur(32px)' }}>
-          <Search className="w-6 h-6 text-pink-500" />
+          <Search className="w-6 h-6 text-blue-600" />
           <span className="text-[15px] font-bold opacity-60">Найти хакатон или митап...</span>
         </div>
       </motion.div>
@@ -108,7 +108,7 @@ export default function Events() {
               <div className="flex justify-between items-start mb-8">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Sparkles size={18} className="text-pink-500" />
+                    <Sparkles size={18} className="text-blue-600" />
                     <h2 className="text-3xl font-black tracking-tight">Nexus Events</h2>
                   </div>
                   <p className="text-[11px] font-black uppercase tracking-widest pl-6 opacity-40">Карта офлайн созидания</p>
@@ -117,13 +117,13 @@ export default function Events() {
               </div>
 
               {!selectedEvent && (
-                <div className="bg-pink-500/5 rounded-3xl p-6 mb-8 border border-pink-500/10 flex items-start gap-4">
+                <div className="bg-blue-600/5 rounded-3xl p-6 mb-8 border border-pink-500/10 flex items-start gap-4">
                   <div className="p-2 bg-white dark:bg-slate-900 rounded-xl shadow-sm">
-                    <Info size={20} className="text-pink-500" />
+                    <Info size={20} className="text-blue-600" />
                   </div>
                   <p className="text-[14px] font-medium leading-relaxed opacity-70">
                     Находите мероприятия рядом. Хакатоны, коворкинг-сессии и митапы — всё это здесь. 
-                    <span className="font-black text-pink-500 block mt-2">Выберите иконку на карте для деталей.</span>
+                    <span className="font-black text-blue-600 block mt-2">Выберите иконку на карте для деталей.</span>
                   </p>
                 </div>
               )}
@@ -159,14 +159,14 @@ export default function Events() {
                     className="flex items-center gap-5 p-5 rounded-[1.5rem] border cursor-pointer transition-all hover:bg-muted-foreground/5 shadow-sm"
                     style={{ 
                       backgroundColor: selectedEvent?.id === event.id ? 'var(--bg-input)' : 'var(--bg-card)',
-                      borderColor: selectedEvent?.id === event.id ? '#ec4899' : 'var(--border)'
+                      borderColor: selectedEvent?.id === event.id ? '#1d4ed8' : 'var(--border)'
                     }}>
                     <div className="text-3xl w-14 h-14 flex items-center justify-center rounded-2xl shrink-0 shadow-inner" style={{ backgroundColor: 'var(--bg-input)' }}>
                       {EVENT_ICONS[event.type].emoji}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-black text-[16px] truncate">{event.title}</h4>
-                      <p className="text-xs font-bold mt-1 text-lime-500 uppercase tracking-wide">{event.date}</p>
+                      <p className="text-xs font-bold mt-1 text-emerald-600 uppercase tracking-wide">{event.date}</p>
                     </div>
                     <div className="text-[14px] font-black w-10 h-10 flex items-center justify-center rounded-full bg-muted-foreground/5 opacity-50 shrink-0">
                       {event.participants}

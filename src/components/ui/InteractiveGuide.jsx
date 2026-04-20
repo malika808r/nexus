@@ -1,35 +1,35 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, X, Sparkles, Map, Target, LayoutGrid } from 'lucide-react';
+import { ChevronRight, ChevronLeft, X, Sparkles, Target, LayoutGrid, Users } from 'lucide-react';
 
 const guideSteps = [
   {
     id: 'welcome',
-    title: 'Добро пожаловать в Nexus!',
-    description: 'Это ваше пространство для реальных действий и созидания. Давайте быстро разберемся, что здесь к чему.',
+    title: 'Nexus: Созидайте вместе',
+    description: 'Добро пожаловать в социальную сеть для тех, кто не просто говорит, а делает. Здесь мы делимся реальными шагами к своим мечтам.',
     icon: Sparkles,
-    color: '#ec4899'
+    color: '#0891b2'
   },
   {
-    id: 'search',
-    title: 'Поиск (Search)',
-    description: 'Тут вы находите людей по навыкам и интересам. Нужно найти дизайнера или кодера? Просто введите запрос.',
-    icon: Map,
-    color: '#84cc16'
+    id: 'people',
+    title: 'Находите единомышленников',
+    description: 'Раздел «Люди» — это сердце нашего комьюнити. Подписывайтесь на интересных билдеров, находите менторов и заводите полезные знакомства.',
+    icon: Users,
+    color: '#2563eb'
   },
   {
     id: 'goals',
-    title: 'Цели (Goals)',
-    description: 'Ваш личный трекер развития. Ставьте цели, разбивайте на шаги и следите за своим прогрессом без лишнего шума.',
+    title: 'Ваши личные цели',
+    description: 'Ставьте амбициозные цели и разбивайте их на малые шаги. Ваш прогресс визуализируется, помогая не терять фокус и мотивацию.',
     icon: Target,
-    color: '#ec4899'
+    color: '#059669'
   },
   {
     id: 'feed',
-    title: 'Лента действий',
-    description: 'Тут нет "успешного успеха". Только реальные отчеты о проделанных шагах других участников. Вдохновляйтесь чужим трудом.',
+    title: 'Делитесь прогрессом',
+    description: 'В Ленте — только реальные отчеты о действиях. Реагируйте на успехи других, оставляйте комментарии и вдохновляйте сообщество своим примером.',
     icon: LayoutGrid,
-    color: '#84cc16'
+    color: '#7c3aed'
   }
 ];
 

@@ -32,7 +32,7 @@ export default function ChatInterface() {
   const loadMessages = async () => {
     const { data: msgs, error } = await supabase
       .from('posts')
-      .select('*, profiles(first_name, last_name, avatar)')
+      .select('*, profiles!user_id(first_name, last_name, avatar_url)')
       .eq('type', `room_${roomId}`)
       .order('created_at', { ascending: true })
       .limit(100);
@@ -64,7 +64,7 @@ export default function ChatInterface() {
   const fetchNewMessageWithProfile = async (msgId) => {
     const { data } = await supabase
       .from('posts')
-      .select('*, profiles(first_name, last_name, avatar)')
+      .select('*, profiles!user_id(first_name, last_name, avatar_url)')
       .eq('id', msgId)
       .single();
       
@@ -152,8 +152,8 @@ export default function ChatInterface() {
                 {!isSent && (
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0 mt-auto mb-1 overflow-hidden"
                        style={{ background: 'linear-gradient(135deg, #fce7f3, #d9f99d)', color: 'var(--text-secondary)' }}>
-                    {msg.profiles?.avatar 
-                      ? <img src={msg.profiles.avatar} className="w-full h-full object-cover" />
+                    {msg.profiles?.avatar_url 
+                      ? <img src={msg.profiles.avatar_url} className="w-full h-full object-cover" />
                       : msg.profiles?.first_name?.charAt(0) || '👤'
                     }
                   </div>
@@ -172,7 +172,7 @@ export default function ChatInterface() {
                         : 'rounded-bl-sm border transition-colors'
                     }`}
                     style={isSent ? {
-                      background: 'linear-gradient(135deg, #ec4899, #84cc16)'
+                      background: 'linear-gradient(135deg, #1d4ed8, #047857)'
                     } : {
                       backgroundColor: 'var(--bg-card)',
                       borderColor: 'var(--border)',
@@ -209,7 +209,7 @@ export default function ChatInterface() {
             type="submit"
             disabled={!newMessage.trim()}
             className="w-11 h-11 shrink-0 rounded-xl text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #ec4899, #84cc16)' }}
+            style={{ background: 'linear-gradient(135deg, #1d4ed8, #047857)' }}
           >
             <Send size={18} className="translate-x-[1px]" />
           </button>

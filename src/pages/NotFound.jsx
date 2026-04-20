@@ -10,7 +10,7 @@ export default function NotFound() {
           initial={{ scale: 0.8, opacity: 0 }} 
           animate={{ scale: 1, opacity: 1 }}
           className="text-[120px] font-black leading-none mb-4"
-          style={{ background: 'linear-gradient(135deg, #ec4899, #84cc16)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+          style={{ background: 'linear-gradient(135deg, #1d4ed8, #047857)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
         >
           404
         </motion.div>

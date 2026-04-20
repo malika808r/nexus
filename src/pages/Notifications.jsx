@@ -5,9 +5,10 @@ import { Heart, UserPlus, Zap, Bell, Check, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const NOTIFICATION_ICONS = {
-  like: { icon: Heart, color: '#ec4899', bg: 'bg-pink-500/10', text: 'оценил(а) ваш шаг' },
-  follow: { icon: UserPlus, color: '#8b5cf6', bg: 'bg-purple-500/10', text: 'подписался(ась) на вас' },
-  collab_request: { icon: Zap, color: '#84cc16', bg: 'bg-lime-500/10', text: 'хочет коллаборацию!' },
+  like: { icon: Heart, color: '#ef4444', bg: 'bg-red-500/10', text: 'оценил(а) ваш шаг' },
+  follow: { icon: UserPlus, color: '#3b82f6', bg: 'bg-blue-500/10', text: 'подписался(ась) на вас' },
+  comment: { icon: Zap, color: '#f59e0b', bg: 'bg-amber-500/10', text: 'оставил(а) комментарий' },
+  message: { icon: Bell, color: '#10b981', bg: 'bg-emerald-500/10', text: 'отправил(а) вам сообщение' },
 };
 
 export default function Notifications() {
@@ -58,7 +59,7 @@ export default function Notifications() {
                 >
                   <Link to={`/app/profile/${n.actor_id}`} className="shrink-0">
                     <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xl overflow-hidden border-2 border-white dark:border-slate-600">
-                       {n.actor?.avatar !== '👤' ? <img src={n.actor?.avatar} className="w-full h-full object-cover" /> : '👤'}
+                        {n.actor?.avatar_url && n.actor?.avatar_url !== '👤' ? <img src={n.actor?.avatar_url} className="w-full h-full object-cover" /> : '👤'}
                     </div>
                   </Link>
 

@@ -36,8 +36,8 @@ export default function Support() {
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row items-center gap-6 mb-8"
         >
-          <div className="w-20 h-20 rounded-[2.5rem] flex items-center justify-center text-white shadow-2xl glow-card-pink relative overflow-hidden"
-               style={{ background: 'linear-gradient(135deg, #ec4899, #84cc16)' }}>
+          <div className="w-20 h-20 rounded-[2.5rem] flex items-center justify-center text-white shadow-2xl glow-card-primary relative overflow-hidden"
+               style={{ background: 'linear-gradient(135deg, var(--color-brand-primary), var(--color-brand-secondary))' }}>
             <HelpCircle size={40} strokeWidth={2.5} />
             <motion.div 
               animate={{ rotate: 360 }} transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
@@ -54,7 +54,7 @@ export default function Support() {
 
         {/* Search Bar */}
         <div className="relative max-w-2xl group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-pink-500 group-focus-within:scale-110 transition-transform" size={24} />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-blue-600 group-focus-within:scale-110 transition-transform" size={24} />
           <input 
             type="text" 
             placeholder="Как мне запитчить проект? Как найти ментора?..."
@@ -69,7 +69,7 @@ export default function Support() {
         {/* FAQ Section */}
         <div className="lg:col-span-2 space-y-4">
           <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
-            <Book className="text-lime-500" /> База знаний
+            <Book className="text-emerald-600" /> База знаний
           </h2>
           
           {filteredFaq.map((item, idx) => (
@@ -79,7 +79,7 @@ export default function Support() {
                 className="w-full px-6 py-6 flex items-center justify-between text-left transition-colors hover:bg-muted-foreground/5"
               >
                 <span className="font-bold text-[17px] pr-8">{item.q}</span>
-                <ChevronRight size={20} className={`transition-transform duration-300 ${openIndex === idx ? 'rotate-90 text-pink-500' : 'opacity-30'}`} />
+                <ChevronRight size={20} className={`transition-transform duration-300 ${openIndex === idx ? 'rotate-90 text-blue-600' : 'opacity-30'}`} />
               </button>
               <AnimatePresence>
                 {openIndex === idx && (
@@ -109,11 +109,11 @@ export default function Support() {
         {/* Contact Sidebar */}
         <div className="space-y-6">
           <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
-            <MessageSquare className="text-pink-500" /> Контакты
+            <MessageSquare className="text-blue-600" /> Контакты
           </h2>
 
           <div className="card p-6 border-none shadow-xl bg-gradient-to-br from-pink-500/5 to-transparent">
-            <Sparkles size={24} className="text-pink-500 mb-4" />
+            <Sparkles size={24} className="text-blue-600 mb-4" />
             <h3 className="font-bold text-lg mb-2">Прямая связь</h3>
             <p className="text-sm opacity-60 mb-6 leading-relaxed">
               Есть идея по улучшению Nexus или возникла проблема? Напишите нашему основателю напрямую.
@@ -127,34 +127,19 @@ export default function Support() {
           </div>
 
           <div className="card p-6 border-none shadow-xl">
-            <Shield size={24} className="text-lime-500 mb-4" />
+            <Shield size={24} className="text-emerald-600 mb-4" />
             <h3 className="font-bold text-lg mb-2">Безопасность</h3>
-            <p className="text-sm opacity-60 mb-1 leading-relaxed">Nexus — это безопасная среда для всех.</p>
+            <p className="text-sm opacity-60 mb-4 leading-relaxed">Хотите сообщить о нарушениях или неприемлемом поведении? Напишите нам.</p>
             <button 
-              onClick={() => show('Правила загружаются...', 'info')}
-              className="text-[14px] font-black uppercase tracking-widest text-pink-500 hover:underline text-left w-full"
+              onClick={() => show('Функция загружается...', 'info')}
+              className="text-[14px] font-black uppercase tracking-widest text-emerald-600 hover:underline text-left w-full"
             >
-              Правила сообщества
+              Политика сообщества
             </button>
           </div>
         </div>
       </div>
 
-      {/* Stats/Social visualization */}
-      <div className="mt-20 flex flex-wrap justify-center gap-12 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
-         <div className="text-center">
-            <div className="text-3xl font-black">1.2k+</div>
-            <div className="text-[10px] font-black uppercase tracking-widest">Builders</div>
-         </div>
-         <div className="text-center">
-            <div className="text-3xl font-black">450</div>
-            <div className="text-[10px] font-black uppercase tracking-widest">Projects</div>
-         </div>
-         <div className="text-center">
-            <div className="text-3xl font-black">8.4k</div>
-            <div className="text-[10px] font-black uppercase tracking-widest">Checkpoints</div>
-         </div>
-      </div>
     </div>
   );
 }

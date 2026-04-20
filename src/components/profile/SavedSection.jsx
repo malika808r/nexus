@@ -140,7 +140,7 @@ export default function SavedSection({ user }) {
                     <X size={14} />
                   </button>
                   <div className="flex gap-3 pr-8">
-                    <Calendar size={18} style={{ color: '#ec4899' }} className="shrink-0 mt-0.5" /> 
+                    <Calendar size={18} style={{ color: '#1d4ed8' }} className="shrink-0 mt-0.5" /> 
                     <p className="text-[14px] leading-relaxed font-medium" style={{ color: 'var(--text-primary)' }}>{note.content}</p>
                   </div>
                 </motion.div>
@@ -161,7 +161,7 @@ export default function SavedSection({ user }) {
               <div key={post.id} className="card p-4">
                 <div className="flex gap-3 mb-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold overflow-hidden"
-                       style={{ background: 'linear-gradient(135deg, #fce7f3, #d9f99d)', color: '#ec4899' }}>
+                       style={{ background: 'linear-gradient(135deg, #fce7f3, #d9f99d)', color: '#1d4ed8' }}>
                     {post.authorAvatar ? (
                       <img src={post.authorAvatar} alt="avatar" className="w-full h-full object-cover" />
                     ) : (
@@ -199,7 +199,7 @@ export default function SavedSection({ user }) {
             {savedProfiles.map(p => (
               <div key={p.id} className="card p-4 flex flex-col items-center text-center">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold mb-3 border-2 overflow-hidden shadow-sm"
-                     style={{ background: 'linear-gradient(135deg, #fce7f3, #d9f99d)', color: '#ec4899', borderColor: 'var(--bg-card)' }}>
+                     style={{ background: 'linear-gradient(135deg, #fce7f3, #d9f99d)', color: '#1d4ed8', borderColor: 'var(--bg-card)' }}>
                   {p.avatar ? (
                     <img src={p.avatar} className="w-full h-full object-cover" />
                   ) : (
@@ -207,7 +207,7 @@ export default function SavedSection({ user }) {
                   )}
                 </div>
                 <h3 className="text-[14px] font-bold w-full truncate mb-1" style={{ color: 'var(--text-primary)' }}>{p.name}</h3>
-                <p className="text-[11px] font-semibold" style={{ color: '#ec4899' }}>{p.tags?.[0] || 'Пользователь'}</p>
+                <p className="text-[11px] font-semibold" style={{ color: '#1d4ed8' }}>{p.tags?.[0] || 'Пользователь'}</p>
               </div>
             ))}
           </div>
