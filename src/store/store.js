@@ -103,6 +103,24 @@ export const useAppStore = create((set, get) => ({
     return false;
   },
 
+  // Редактирование поста (Критерий: Update)
+  updateCheckpoint: async (checkpointId, content) => {
+    const { data, error } = await supabase
+      .from('goal_checkpoints')
+      .update({ content })
+      .eq('id', checkpointId)
+      .select()
+      .single();
+
+    if (!error) {
+      set(state => ({
+        feed: state.feed.map(item => item.id === checkpointId ? { ...item, content: data.content } : item)
+      }));
+      return { success: true };
+    }
+    return { success: false, error: error.message };
+  },
+
   // Получение данных ОДНОГО профиля по ID (Критерий: Read One)
   fetchProfileById: async (id) => {
     const { data, error } = await supabase
@@ -112,6 +130,54 @@ export const useAppStore = create((set, get) => ({
       .single();
 
     if (error) return null;
+    return data;
+  },
+
+  // Получение одного поста по ID (Критерий: Read One)
+  fetchCheckpointById: async (id) => {
+    const { data, error } = await supabase
+      .from('goal_checkpoints')
+      .select('*, goals(id, title), profiles:profiles(id, first_name, last_name, avatar_url)')
+      .eq('id', id)
+      .single();
+    if (error) return null;
+    return data;
+  },
+
+  // === DIRECT MESSAGING (1-on-1) ===
+  // Используем таблицу 'messages' согласно схеме 001_init.sql
+  fetchDirectMessages: async (user1Id, user2Id) => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*, sender:profiles!sender_id(id, first_name, last_name, avatar_url)')
+      .or(`and(sender_id.eq.${user1Id},recipient_id.eq.${user2Id}),and(sender_id.eq.${user2Id},recipient_id.eq.${user1Id})`)
+      .order('created_at', { ascending: true });
+    
+    if (error) {
+      console.error("Error fetching direct messages:", error);
+      return [];
+    }
+    return data;
+  },
+
+  sendDirectMessage: async (recipientId, content) => {
+    const user = get().user;
+    if (!user) return null;
+    
+    const { data, error } = await supabase
+      .from('messages')
+      .insert([{
+        sender_id: user.id,
+        recipient_id: recipientId,
+        content: content
+      }])
+      .select('*, sender:profiles!sender_id(id, first_name, last_name, avatar_url)')
+      .single();
+      
+    if (error) {
+      console.error("Error sending direct message:", error);
+      return null;
+    }
     return data;
   },
 
@@ -128,8 +194,19 @@ export const useAppStore = create((set, get) => ({
   },
 
   deleteAnyPost: async (id) => {
-    const { error } = await supabase.from('goal_checkpoints').delete().eq('id', id);
-    if (!error) get().fetchAdminData();
+    try {
+      // Пытаемся сначала удалить реакции вручную (на случай отсутствия CASCADE)
+      await supabase.from('reactions').delete().eq('checkpoint_id', id);
+      
+      const { error } = await supabase.from('goal_checkpoints').delete().eq('id', id);
+      if (error) throw error;
+      
+      get().fetchAdminData();
+      return { success: true };
+    } catch (error) {
+      console.error('Ошибка удаления поста:', error);
+      return { success: false, error: error.message };
+    }
   },
 
   // ==========================================
@@ -262,7 +339,7 @@ export const useAppStore = create((set, get) => ({
     const { data, error } = await supabase
       .from('comments')
       .insert([{ checkpoint_id: checkpointId, user_id: user.id, text }])
-      .select('*, profiles!user_id(id, first_name, last_name, avatar)')
+      .select('*, profiles!user_id(id, first_name, last_name, avatar_url)')
       .single();
     if (error) { console.error("Ошибка комментария:", error); return false; }
     set(state => ({

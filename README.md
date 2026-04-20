@@ -1,16 +1,104 @@
-# React + Vite
+# 🚀 Nexus — Платформа для коллективного созидания
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Nexus** — это современное прогрессивное веб-приложение (SPA), разработанное как финальный учебный проект. Платформа представляет собой социальную сеть для "созидателей" — людей, которые ставят перед собой амбициозные цели и делятся ежедневными шагами (чекпоинтами) по их достижению.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Основные возможности
 
-## React Compiler
+### 🔐 Авторизация и Безопасность
+- **Регистрация и Вход**: Полноценная логика на базе Supabase Auth.
+- **Защищенные маршруты**: Доступ к приложению только после авторизации.
+- **Хранение сессии**: Автоматическое сохранение токена и восстановление сессии.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🎯 Система целей и Лента
+- **Мои цели**: Создание личных целей и управление ими (Basecamp).
+- **Ежедневные шаги (Feed)**: Публикация достижений, привязанных к конкретным целям.
+- **Взаимодействие**: Система реакций (эмодзи) и древовидных комментариев.
+- **CRUD**: Полный цикл создания, чтения, редактирования и удаления постов.
 
-## Expanding the ESLint configuration
+### 👥 Социальный граф и Поиск
+- **Люди**: Список всех участников сообщества.
+- **Поиск, Фильтрация, Сортировка**: Продвинутый поиск по именам, фильтрация по подпискам и алфавитная сортировка.
+- **Подписки**: Возможность подписываться на других пользователей и следить за их прогрессом.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 💬 Коммуникации
+- **Чат (Community Rooms)**: Общие комнаты для обсуждений.
+- **Личные сообщения**: Приватные диалоги между пользователями.
+- **Уведомления**: Система уведомлений о новых подписках, лайках и комментариях.
+
+### 🛠 Админ-панель
+- Панель управления для модерации контента.
+- Статистика пользователей и постов.
+- Возможность удаления любого контента (доступно только пользователям с ролью `admin`).
+
+---
+
+## 🎨 Дизайн и UX
+- **Эстетика Nexu**: Современный интерфейс в стиле Blue-Cyan-Emerald.
+- **Темная тема**: Полноценная поддержка Dark Mode.
+- **Глассморфизм**: Использование эффектов матового стекла и размытия.
+- **Анимации**: Плавные переходы и микро-взаимодействия на базе Framer Motion.
+- **Локализация**: Полная поддержка русского и английского языков (i18next).
+- **Состояния**: Обработка состояний загрузки (Skeletons), ошибок и пустых данных.
+
+---
+
+## 🛠 Технологический стек
+
+- **Frontend**: [React 18](https://reactjs.org/) + [Vite](https://vitejs.dev/)
+- **Язык**: JavaScript (ES6+)
+- **Стилизация**: [Tailwind CSS 4.0](https://tailwindcss.com/)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Backend as a Service**: [Supabase](https://supabase.com/) (PostgreSQL + Auth + Realtime)
+- **Routing**: [React Router 6](https://reactrouter.com/)
+- **Forms**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+
+---
+
+## 🚀 Запуск проекта
+
+### 1. Клонирование репозитория
+```bash
+git clone https://github.com/malika808r/kyzjolu__web.git
+cd kyzjolu__web
+```
+
+### 2. Установка зависимостей
+```bash
+npm install
+```
+
+### 3. Настройка переменных окружения
+Создайте файл `.env` в корне проекта и добавьте ключи Supabase:
+```env
+VITE_SUPABASE_URL=ваш_url
+VITE_SUPABASE_ANON_KEY=ваш_ключ
+```
+
+### 4. Запуск в режиме разработки
+```bash
+npm run dev
+```
+
+### 5. Сборка (Production)
+```bash
+npm run build
+```
+
+---
+
+## 📁 Структура проекта
+
+- `src/components` — Переиспользуемые UI-компоненты.
+- `src/pages` — Страницы приложения (всего 13+ страниц).
+- `src/store` — Глобальное состояние (Zustand).
+- `src/lib` — Утилитарные функции и конфигурация API.
+- `src/i18n` — Конфигурация переводов.
+- `src/assets` — Статические ресурсы (логотипы, изображения).
+
+---
+
+## 📄 Лицензия
+Этот проект создан в рамках образовательного курса и предназначен для демонстрации навыков разработки на React.

@@ -16,6 +16,8 @@ import Basecamp from './pages/Basecamp';
 import Support from './pages/Support';
 import Notifications from './pages/Notifications';
 import AdminPanel from './pages/AdminPanel';
+import CreatePostPage from './pages/CreatePostPage';
+import EditPostPage from './pages/EditPostPage';
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +40,14 @@ export const router = createBrowserRouter([
       {
         path: 'goals',
         element: <ProtectedRoute><Basecamp /></ProtectedRoute>,
+      },
+      {
+        path: 'feed/create',
+        element: <ProtectedRoute><CreatePostPage /></ProtectedRoute>,
+      },
+      {
+        path: 'feed/:id/edit',
+        element: <ProtectedRoute><EditPostPage /></ProtectedRoute>,
       },
       {
         path: 'people', // Теперь это главная страница для поиска напарников

@@ -5,9 +5,19 @@ import { Search, Users, MapPin, MessageCircle, UserPlus, UserMinus, Sparkles, Lo
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ui/Toast';
 
+/*
+- [x] Update `Profile.jsx` to generate deterministic private room IDs
+- [x] Update `ChatInterface.jsx` to support private room headers (fetch partner's identity)
+- [x] Update `People.jsx` to fix the 'Message' button redirection
+- [ ] Ensure `sendMessage` and `loadMessages` work with private room IDs in the `posts` table
+- [ ] Final verification in browser
+*/
+
 export default function People() {
   const { people, peopleLoading, fetchPeople, following, followUser, unfollowUser, user } = useAppStore();
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('newest'); // or 'name'
+  const [filterBy, setFilterBy] = useState('all'); // 'all' or 'following'
   const navigate = useNavigate();
   const { show } = useToast();
 
@@ -30,7 +40,18 @@ export default function People() {
   };
 
   // Filter out yourself
-  const filteredPeople = (people || []).filter(p => p.id !== user?.id);
+  let filteredPeople = (people || []).filter(p => p.id !== user?.id);
+
+  // Apply Filter
+  if (filterBy === 'following') {
+    filteredPeople = filteredPeople.filter(p => following.includes(p.id));
+  }
+
+  // Apply Sorting
+  filteredPeople = [...filteredPeople].sort((a, b) => {
+    if (sortBy === 'name') return a.first_name.localeCompare(b.first_name, 'ru');
+    return 0; // Default: newest (assuming API returns newest first)
+  });
 
   const fallbackPeople = [
     { id: '00000000-0000-0000-0000-0000000000f1', first_name: 'Алина', last_name: 'Дизайнер', bio: 'Создаю интерфейсы для созидателей.', avatar_url: '👩‍🎨', isFallback: true },
@@ -58,15 +79,36 @@ export default function People() {
         </div>
 
         {/* Search */}
-        <div className="relative group">
-          <Search size={20} className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-600 group-focus-within:scale-110 transition-transform opacity-60" />
-          <input
-            type="text"
-            value={search}
-            onChange={handleSearch}
-            placeholder="Найти по имени..."
-            className="input-base pl-14 h-16 text-base shadow-lg w-full"
-          />
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative group flex-1">
+            <Search size={20} className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-600 group-focus-within:scale-110 transition-transform opacity-60" />
+            <input
+              type="text"
+              value={search}
+              onChange={handleSearch}
+              placeholder="Найти по имени..."
+              className="input-base pl-14 h-14 text-base shadow-lg w-full"
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSortBy(sortBy === 'name' ? 'newest' : 'name')}
+              className={`px-4 h-14 rounded-2xl border-2 font-bold text-[13px] transition-all flex items-center gap-2 ${
+                sortBy === 'name' ? 'bg-blue-500 border-blue-500 text-white shadow-lg' : 'bg-muted-foreground/5 border-transparent opacity-60'
+              }`}
+            >
+              {sortBy === 'name' ? 'По имени А-Я' : 'Сортировка'}
+            </button>
+            <button
+              onClick={() => setFilterBy(filterBy === 'following' ? 'all' : 'following')}
+              className={`px-4 h-14 rounded-2xl border-2 font-bold text-[13px] transition-all flex items-center gap-2 ${
+                filterBy === 'following' ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg' : 'bg-muted-foreground/5 border-transparent opacity-60'
+              }`}
+            >
+              {filterBy === 'following' ? 'Подписки' : 'Все'}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -119,7 +161,10 @@ export default function People() {
                   {/* Message + Follow buttons */}
                   <div className="flex gap-2">
                     <button
-                      onClick={() => navigate('/app/chats')}
+                      onClick={() => {
+                        const ids = [user.id, person.id].sort();
+                        navigate(`/app/chats/private_${ids[0]}_${ids[1]}`);
+                      }}
                       className="w-10 h-10 rounded-xl flex items-center justify-center transition-all bg-muted-foreground/5 hover:bg-blue-500/10 hover:text-blue-600"
                       title="Написать"
                     >

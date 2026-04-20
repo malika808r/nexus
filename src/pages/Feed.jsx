@@ -230,6 +230,17 @@ function PostCard({ post, user, onReact, navigate }) {
           <span>{reactionCount + commentCount > 0 ? reactionCount + commentCount : ''} Комментарий</span>
           {showComments ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </button>
+
+        {/* Edit button (Only for author) */}
+        {authorId === user?.id && (
+          <button
+            onClick={() => navigate(`/app/feed/${post.id}/edit`)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] font-bold transition-all hover:bg-blue-500/10 text-blue-600 ml-auto"
+          >
+            <Edit3 size={16} />
+            <span>Редактировать</span>
+          </button>
+        )}
       </div>
 
       {/* Expandable comments */}
@@ -283,7 +294,7 @@ export default function Feed() {
 
         {/* Post button shortcut */}
         <button
-          onClick={() => window.dispatchEvent(new Event('open-create'))}
+          onClick={() => navigate('/app/feed/create')}
           className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border-2 border-dashed text-left transition-all hover:border-blue-500/40 hover:bg-blue-500/5 group"
           style={{ borderColor: 'var(--border)' }}
         >

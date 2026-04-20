@@ -50,10 +50,27 @@ export default function AdminPanel() {
                     <tbody>
                         {adminData.posts.map(post => (
                             <tr key={post.id} className="border-b border-[var(--border)] text-sm">
-                                <td className="p-4 truncate max-w-xs">{post.content}</td>
-                                <td className="p-4 font-mono text-xs">{post.goals?.user_id}</td>
                                 <td className="p-4">
-                                    <button onClick={() => deleteAnyPost(post.id)} className="text-red-500 hover:scale-110 transition-transform">
+                                    <div className="max-w-xs overflow-hidden">
+                                        <p className="truncate font-medium">{post.content}</p>
+                                        <p className="text-[10px] opacity-40 mt-1 uppercase tracking-tighter">Цель: {post.goals?.title || 'Без цели'}</p>
+                                    </div>
+                                </td>
+                                <td className="p-4 font-mono text-[10px] opacity-60">{post.goals?.user_id}</td>
+                                <td className="p-4">
+                                    <button 
+                                        onClick={async () => {
+                                            if (window.confirm('Вы уверены, что хотите безвозвратно удалить этот пост?')) {
+                                                const res = await deleteAnyPost(post.id);
+                                                if (res?.success) {
+                                                    alert('Пост успешно удален');
+                                                } else {
+                                                    alert('Ошибка при удалении: ' + (res?.error || 'Неизвестная ошибка'));
+                                                }
+                                            }
+                                        }} 
+                                        className="w-10 h-10 rounded-xl flex items-center justify-center text-red-500 hover:bg-red-500/10 transition-colors active:scale-90"
+                                    >
                                         <Trash2 size={18} />
                                     </button>
                                 </td>

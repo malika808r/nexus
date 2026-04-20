@@ -176,10 +176,16 @@ export default function Profile() {
                     className={`h-12 px-8 rounded-2xl font-black text-[14px] shadow-xl active:scale-95 transition-all ${following.includes(currentId) ? 'bg-muted-foreground/10 text-primary' : 'bg-blue-600 text-white'}`}>
                     {following.includes(currentId) ? 'Отписаться' : 'Подписаться'}
                   </button>
-                  <button onClick={() => navigate('/app/chats')}
+                  <button 
+                    onClick={() => {
+                      const ids = [user.id, currentId].sort();
+                      navigate(`/app/chats/private_${ids[0]}_${ids[1]}`);
+                    }}
                     className="h-12 px-6 rounded-2xl font-black border-2 flex items-center gap-2 hover:bg-blue-600 hover:text-white transition-all"
-                    style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}>
-                    <MessageCircle size={18} /> Написать
+                    style={{ borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                  >
+                    <MessageCircle size={18} />
+                    Написать
                   </button>
                 </div>
               )}
