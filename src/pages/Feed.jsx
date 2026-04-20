@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAppStore } from '../store/store';
-import { Heart, MessageCircle, Zap, Sparkles, Send, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, Zap, Sparkles, Send, ChevronDown, ChevronUp, Loader2, Edit3 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../components/ui/Toast';
 import { useInView } from 'react-intersection-observer';
